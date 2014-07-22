@@ -1,0 +1,12 @@
+{
+    "name": "rudra/core",
+    "type": "library",
+    "description": "Suporting library for Rudrax",
+    "keywords": ["rudra", "API", "controller","smarty"],
+    "license": "MIT",
+    "version" : "1.0",
+    
+    "require": {
+        "rudra/smarty": "dev-master"
+    }
+}
