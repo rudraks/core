@@ -1,5 +1,5 @@
 {
-    "name": "rudra/core",
+    "name": "rudrax/core",
     "type": "library",
     "description": "Suporting library for Rudrax",
     "keywords": ["rudra", "API", "controller","smarty"],
@@ -7,6 +7,6 @@
     "version" : "1.0",
     
     "require": {
-        "rudra/smarty": "dev-master"
+        "rudrax/smarty": "dev-master"
     }
 }
