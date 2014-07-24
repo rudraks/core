@@ -11,7 +11,7 @@ class RudraX {
 
 	public static function init(){
 		include_once ("model/RxCache.php");
-		if(self::$browser==NULL) 
+		if(self::$browser==NULL)
 			self::$browser = new Browser();
 		self::$webmodules = self::WebCache()->get('modules');
 		if(DEBUG_BUILD || !self::$webmodules){
@@ -34,7 +34,13 @@ class RudraX {
 	public static function loadConfig($file){
 		ob_start ();
 		session_start ();
-		$GLOBALS ['CONFIG'] = parse_ini_file ($file, TRUE );
+		$DEFAULT_GLOB = parse_ini_file ("config/_project.properties", TRUE );
+		$GLOBALS ['CONFIG']= parse_ini_file ($file, TRUE );
+		
+		$GLOBALS ['CONFIG']['GLOBAL'] = array_merge(
+				$DEFAULT_GLOB['GLOBAL'],
+				$GLOBALS ['CONFIG']['GLOBAL']
+		);
 		set_include_path ($GLOBALS['CONFIG']['GLOBAL']['WORK_DIR']);
 		define("BASE_PATH", dirname(__FILE__) );
 

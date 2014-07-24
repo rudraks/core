@@ -67,7 +67,7 @@ class AbstractPageController extends AbstractSmartyController {
 				//$tpl->display($this->getViewPath() . $view . Config::get('TEMP_EXT'));
 				$tpl->display(get_include_path().RUDRA."/core/view/full.tpl");
 				//$header->minified->logs();
-				if(Config::get('JS_LOGS')){
+				if(BROWSER_LOGS){
 					Browser::printlogs();
 				}
 				
