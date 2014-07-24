@@ -7,6 +7,8 @@
     "version" : "1.0",
     
     "require": {
-        "rudrax/smarty": "dev-master"
+        "rudrax/smarty": "dev-master",
+        "rudrax/phpfastcache": "dev-master",
+        "rudrax/magicmin": "dev-master"
     }
 }
