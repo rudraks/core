@@ -5,8 +5,6 @@
 * To change this template file, choose Tools | Templates
 * and open the template in the editor.
 */
-include_once(RUDRA . "/user.abstract.php");
-
 /**
  * Description of User, it basically extends AbstractUser and implemetns atleast two methods
  *

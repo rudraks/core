@@ -2,7 +2,7 @@
 
 
 //include_once(LIB_PATH . "/Cache.php");
-include(LIB_PATH."/phpfastcache/phpfastcache.php");
+include(LIB_PATH."/rudrax/phpfastcache/phpfastcache.php");
 
 class RxCache {
 

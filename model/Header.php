@@ -6,7 +6,7 @@
 * and open the template in the editor.
 */
 
-require_once(LIB_PATH.'/magix/class.magic-min.php' );
+require_once(RUDRA.'/magicmin/class.magic-min.php' );
 
 //Initialize the class with image encoding, gzip, a timer, and use the google closure API
 
@@ -22,18 +22,13 @@ class Header {
 	public $scripts = array();
 	public $css = array();
 	public $dones = array();
-	public $config =  array();
+	public $modules =  array();
 	public $minified;
-	public $console;
 	public static $REPLACE_REGEX;
 	public static $BUILD_PATH;
 
 	public function  __construct(Smarty $tpl){
-		$tpl->configLoad(get_include_path() .LIB_PATH."/lib.compose.conf",'*');
-		$rx_array = $tpl->getConfigVars();
-		$x = $tpl->configLoad("compose.conf",'*');
-		//$tpl->fetch(get_include_path().RUDRA."/view/empty.tpl");
-		$this->config = array_merge($rx_array,$tpl->getConfigVars());
+		$this->modules = Rudrax::getModules();
 		$this->minified = new Minifier( array(
 				'echo' => false,
 				'encode' => true,
@@ -41,11 +36,8 @@ class Header {
 				'gzip' => true,
 				//'closure' => true
 		));
-		$this->console = new Console();
 		self::$BUILD_PATH = get_include_path(). BUILD_PATH.'/';
 		self::$REPLACE_REGEX = '/('.LIB_PATH.'|'.RESOURCE_PATH.')/';
-
-		// 		/print_r( $this->config);
 	}
 	
 	public function title($title){
@@ -54,7 +46,6 @@ class Header {
 	
 	public function meta($meta){
 		foreach($meta as $key=>$value){
-// 			echo $key ."---". $value;
 			$this->metas[$key] = $value;
 		}
 	}
@@ -66,37 +57,40 @@ class Header {
 	}
 
 	private function _import($module){
-		if(isset($this->config[$module]) && !isset($this->dones[$module])){
-			$dones[$module] = $module;
-			$this->add($module,$this->config[$module]);
+		if(isset($this->modules[$module]) && !isset($this->dones[$module])){
+			$this->dones[$module] = $module;
+			$this->add($module,$this->modules[$module]);
 		}
 	}
 
 	private function add($module,$list){
 		
-		if(isset($list['ON'])){
-			$modules = explode(',',$list['ON']);
+		if(isset($list['@'])){
+			$modules = explode(',',$list['@']);
 			foreach($modules as $key=>$value){
 				$this->import($value);
 			}
 		}
 		
-		$libpath = ((isset($list['RX']) && $list['RX']==TRUE)? LIB_PATH : RESOURCE_PATH);
-
+		$libpath = RESOURCE_PATH;
 		foreach($list as $key=>$value){
-			if($key!='ON'){
+			if($key!='@'){
 				$ext = strtolower(pathinfo($value, PATHINFO_EXTENSION));
 				$remote_file = $this->remote_file($value);
-				if($ext=='js' && !$this->remote_file($value)){
-					$this->scripts[$module.".".$key] = $libpath."/".$value;
-				} else if($ext=='css' && !$this->remote_file($value)){
-					$this->css[$module.".".$key] = $libpath."/".$value;
-				} elseif($ext=='js' && $this->remote_file($value)){
-					$this->scripts[$module.".".$key] = $value;
-				} else if($ext=='css' && $this->remote_file($value)){
-					$this->css[$module.".".$key] = $value;
-				} else if($this->remote_file($value)) {
-					$this->scripts[$module.".".$key] = $value;
+				if(!$remote_file){
+					if($ext=='js'){
+						$this->scripts[$module.".".$key] = $libpath."/".$value;
+					} else if($ext=='css'){
+						$this->css[$module.".".$key] = $libpath."/".$value;
+					}	
+				} else {
+					if($ext=='js'){
+						$this->scripts[$module.".".$key] = $value;
+					} else if($ext=='css'){
+						$this->css[$module.".".$key] = $value;
+					} else {
+						$this->scripts[$module.".".$key] = $value;
+					}
 				}
 			}
 		}
@@ -117,23 +111,23 @@ class Header {
 
 	public function minify(){
 		foreach($this->scripts as $key=>$value){
-			
 			//$newName = self::$BUILD_PATH.RESOURCE_PATH.preg_replace(self::$REPLACE_REGEX,"",$this->scripts[$key],1);
 			if(!$this->remote_file($value) && file_exists(get_include_path().$this->scripts[$key])){	
-			$newName = self::$BUILD_PATH.$this->scripts[$key];
-			//echo $key."--".$value."--".$newName."<br>";
-			$this->scripts[$key] = CONTEXT_PATH.str_replace(self::$BUILD_PATH,"",
-					$this->minified->minify(get_include_path().$this->scripts[$key],$newName)
-			);
-			}
+				$newName = self::$BUILD_PATH.$this->scripts[$key];
+				//echo "[".$value."-->".$newName.":::".self::$BUILD_PATH."]<br>";
+				$this->scripts[$key] = CONTEXT_PATH.str_replace(self::$BUILD_PATH,"",
+						$this->minified->minify(get_include_path().$value,$newName)
+				);
+			} //else $this->scripts[$key] = CONTEXT_PATH.$this->scripts[$key];
 		}
 		foreach($this->css as $key=>$value){
 			//$newName = self::$BUILD_PATH.RESOURCE_PATH.preg_replace(self::$REPLACE_REGEX,"",$this->css[$key],1);
-			if(!$this->remote_file($value)){
-			$newName = self::$BUILD_PATH.$this->css[$key];
-			$this->css[$key] =  CONTEXT_PATH.str_replace(self::$BUILD_PATH,"",
-					$this->minified->minify(get_include_path().$this->css[$key],$newName)
-			);
+			if(!$this->remote_file($value) && file_exists(get_include_path().$this->css[$key])){
+				$newName = self::$BUILD_PATH.$this->css[$key];
+				//echo $key."--".$value."--".$newName."<br>";
+				$this->css[$key] =  CONTEXT_PATH.str_replace(self::$BUILD_PATH,"",
+						$this->minified->minify(get_include_path().$this->css[$key],$newName)
+				);
 			}
 		}
 	}

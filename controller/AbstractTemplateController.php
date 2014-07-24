@@ -3,8 +3,8 @@
 /*
  * To change this license header, choose License Headers in Project Properties. To change this template file, choose Tools | Templates and open the template in the editor.
 */
-include_once (LIB_PATH . "/smarty/Smarty.class.php");
-include_once (RUDRA . "/controller/AbstractController.php");
+include_once (LIB_PATH . "/rudrax/smarty/Smarty.class.php");
+include_once (RUDRA . "/core/controller/AbstractController.php");
 
 class AbstractTemplateController extends AbstractSmartyController {
 
@@ -19,7 +19,7 @@ class AbstractTemplateController extends AbstractSmartyController {
 	public function invoke(User $user, $handlerName) {
 		$className = ucfirst($handlerName );
 		$user->validate();
-		include_once(RUDRA . "/handler/AbstractHandler.php");
+		include_once(RUDRA . "/core/handler/AbstractHandler.php");
 		include_once (HANDLER_PATH . "/" . $this->getHandlerPath() . $className . ".php");
 		$tempClass = new ReflectionClass($className );
 		global $temp;

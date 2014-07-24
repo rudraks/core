@@ -6,7 +6,7 @@
 * and open the template in the editor.
 */
 
-include_once(RUDRA . "/model/DataModel.php");
+include_once(RUDRA . "/core/model/DataModel.php");
 /**
  * Description of Header
  *

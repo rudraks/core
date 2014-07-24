@@ -11,8 +11,6 @@
  *
  * @author Lalit Tanwar
  */
-include_once(RUDRA . "/model/RxCache.php");
-
 class AbstractUser {
 
 	public static $usercache;
