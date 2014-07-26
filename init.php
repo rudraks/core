@@ -15,7 +15,6 @@ class RudraX {
 			self::$browser = new Browser();
 		self::$webmodules = self::WebCache()->get('modules');
 		if(DEBUG_BUILD || !self::$webmodules){
-			Console::log("no found");
 			self::$webmodules = self::getModuleProperties(get_include_path().LIB_PATH,self::$webmodules);
 			self::$webmodules = self::getModuleProperties(get_include_path().RESOURCE_PATH,self::$webmodules);
 			self::WebCache()->set('modules',self::$webmodules);
@@ -170,16 +169,15 @@ class RudraX {
 					try{
 						$mod_file = $dir.'/'.$entry;
 						$mode_time = filemtime($mod_file);
-						if(isset($filemodules["_"][$mod_file]) && $mode_time == $filemodules["_"][$mod_file]){
+						if(!DEBUG_BUILD && isset($filemodules["_"][$mod_file]) && $mode_time == $filemodules["_"][$mod_file]){
 							Browser::console("from cache....");
 						} else {
-							Browser::console("from cache....");
 							$filemodules["_"][$mod_file] = $mode_time;
 							$r = parse_ini_file ($dir.'/'.$entry, TRUE );
 							foreach($r as $mod=>$files){
 								$filemodules['mods'][$mod] = array();
 								foreach($files as $key=>$file){
-									if($key!='@')
+									if($key!='@' && !is_remote_file($file))
 										$filemodules['mods'][$mod][$key] = $dir.'/'.$file;
 									else $filemodules['mods'][$mod][$key] = $file;
 								}
@@ -221,6 +219,14 @@ class Browser {
 	}
 	public static function printlogs(){
 		return self::$console->printlogs();
+	}
+}
+
+function is_remote_file( $file ){
+	if( preg_match( "/(http|https)/", $file ) ){ //It is a remote file
+		return true;
+	} else { //Local file
+		return false;
 	}
 }
 ?>

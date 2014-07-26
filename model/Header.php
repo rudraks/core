@@ -39,11 +39,11 @@ class Header {
 		self::$BUILD_PATH = get_include_path(). BUILD_PATH.'/';
 		self::$REPLACE_REGEX = '/('.LIB_PATH.'|'.RESOURCE_PATH.')/';
 	}
-	
+
 	public function title($title){
-		$this->title = $title;		
+		$this->title = $title;
 	}
-	
+
 	public function meta($meta){
 		foreach($meta as $key=>$value){
 			$this->metas[$key] = $value;
@@ -64,25 +64,24 @@ class Header {
 	}
 
 	private function add($module,$list){
-		
+
 		if(isset($list['@'])){
 			$modules = explode(',',$list['@']);
 			foreach($modules as $key=>$value){
 				$this->import($value);
 			}
 		}
-		
+
 		$libpath = RESOURCE_PATH;
 		foreach($list as $key=>$value){
 			if($key!='@'){
 				$ext = strtolower(pathinfo($value, PATHINFO_EXTENSION));
-				$remote_file = $this->remote_file($value);
-				if(!$remote_file){
+				if(!is_remote_file($value)){
 					if($ext=='js'){
 						$this->scripts[$module.".".$key] = $libpath."/".$value;
 					} else if($ext=='css'){
 						$this->css[$module.".".$key] = $libpath."/".$value;
-					}	
+					}
 				} else {
 					if($ext=='js'){
 						$this->scripts[$module.".".$key] = $value;
@@ -95,24 +94,10 @@ class Header {
 			}
 		}
 	}
-	private function remote_file( $file )
-	{
-		//It is a remote file
-		if( preg_match( "/(http|https)/", $file ) )
-		{
-			return true;
-		}
-		//Local file
-		else
-		{
-			return false;
-		}
-	}
-
 	public function minify(){
 		foreach($this->scripts as $key=>$value){
 			//$newName = self::$BUILD_PATH.RESOURCE_PATH.preg_replace(self::$REPLACE_REGEX,"",$this->scripts[$key],1);
-			if(!$this->remote_file($value) && file_exists(get_include_path().$this->scripts[$key])){	
+			if(!is_remote_file($value) && file_exists(get_include_path().$this->scripts[$key])){
 				$newName = self::$BUILD_PATH.$this->scripts[$key];
 				//echo "[".$value."-->".$newName.":::".self::$BUILD_PATH."]<br>";
 				$this->scripts[$key] = CONTEXT_PATH.str_replace(self::$BUILD_PATH,"",
@@ -122,7 +107,7 @@ class Header {
 		}
 		foreach($this->css as $key=>$value){
 			//$newName = self::$BUILD_PATH.RESOURCE_PATH.preg_replace(self::$REPLACE_REGEX,"",$this->css[$key],1);
-			if(!$this->remote_file($value) && file_exists(get_include_path().$this->css[$key])){
+			if(!is_remote_file($value) && file_exists(get_include_path().$this->css[$key])){
 				$newName = self::$BUILD_PATH.$this->css[$key];
 				//echo $key."--".$value."--".$newName."<br>";
 				$this->css[$key] =  CONTEXT_PATH.str_replace(self::$BUILD_PATH,"",
