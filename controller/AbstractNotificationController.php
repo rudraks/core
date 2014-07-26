@@ -2,7 +2,7 @@
 /*
  * @category Lib @package Test Suit @copyright 2011, 2012 Dmitry Sheiko (http://dsheiko.com) @license GNU
 */
-include_once (RUDRA . "/controller/AbstractController.php");
+include_once (RUDRA . "/core/controller/AbstractController.php");
 
 /**
  *
