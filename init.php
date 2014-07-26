@@ -79,7 +79,7 @@ class RudraX {
 	}
 	public static function getNotificationController (){
 		self::includeUser();
-		include_once ("model/AbstractNotificationController.php");
+		include_once ("controller/AbstractNotificationController.php");
 		if (file_exists(get_include_path() . CONTROLLER_PATH . "/NotificationController.php" )) {
 			include_once (CONTROLLER_PATH . "/NotificationController.php");
 		} else {
@@ -89,7 +89,7 @@ class RudraX {
 	}
 	public static function getDataController (){
 		self::includeUser();
-		include_once ("model/AbstractDataController.php");
+		include_once ("controller/AbstractDataController.php");
 		if (file_exists(get_include_path() . CONTROLLER_PATH . "/DataController.php" )) {
 			include_once (CONTROLLER_PATH . "/DataController.php");
 		} else {
@@ -174,6 +174,7 @@ class RudraX {
 						} else {
 							$filemodules["_"][$mod_file] = $mode_time;
 							$r = parse_ini_file ($dir.'/'.$entry, TRUE );
+							Browser::console($dir.'/'.$entry);
 							foreach($r as $mod=>$files){
 								$filemodules['mods'][$mod] = array();
 								foreach($files as $key=>$file){
