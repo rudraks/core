@@ -7,6 +7,6 @@
 *
 */
 
-class DataController extends AbstractPageController {
+class DataController extends AbstractDataController {
 
 }
