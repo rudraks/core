@@ -15,7 +15,7 @@ class AbstractDataController extends AbstractController {
 	public function invoke(User $user, $handlerName) {
 		$className = ucfirst($handlerName );
 		$user->validate();
-		include_once(RUDRA . "/handler/AbstractHandler.php");
+		include_once(RUDRA . "/core/handler/AbstractHandler.php");
 		include_once (HANDLER_PATH . "/" . $this->getHandlerPath() . $className . ".php");
 		$tempClass = new ReflectionClass($className );
 		global $temp;
