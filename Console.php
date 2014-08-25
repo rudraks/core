@@ -93,8 +93,10 @@ class Console {
 		self::_log ( $args, 'exception' );
 	}
 
-	public function browser($msgData){
-		$trace = debug_backtrace ();
+	public function browser($msgData,$trace=null){
+		if($trace==null){
+			$trace = debug_backtrace();
+		}
 		$this->messages[][$trace[0]["file"].'('.$trace[0]["line"].')'] = $msgData;
 	}
 	/**

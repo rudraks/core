@@ -57,9 +57,25 @@ class Header {
 	}
 
 	private function _import($module){
+		Browser::console($module);
 		if(isset($this->modules[$module]) && !isset($this->dones[$module])){
 			$this->dones[$module] = $module;
 			$this->add($module,$this->modules[$module]);
+		} else {
+			$moduleSplit = explode('/',$module);
+			$size = count($moduleSplit);
+			if($size>1){
+				$last = $moduleSplit[$size-1];
+				$super_module_list = array_splice($moduleSplit,$size-1,1);
+				$super_module = implode('/',$moduleSplit);
+				//Browser::console($super_module);
+				if(isset($this->modules[$super_module])
+						&& isset($this->modules[$super_module][$last])
+						&& !isset($this->dones[$super_module])){
+					$this->addFile($super_module,$moduleSplit[$size-2],
+							$this->modules[$super_module][$last]);
+				}
+			}
 		}
 	}
 
@@ -72,32 +88,38 @@ class Header {
 			}
 		}
 
-		$libpath = RESOURCE_PATH;
 		foreach($list as $key=>$value){
 			if($key!='@'){
-				$ext = strtolower(pathinfo($value, PATHINFO_EXTENSION));
-				if(!is_remote_file($value)){
-					if($ext=='js'){
-						$this->scripts[$module.".".$key] = $libpath."/".$value;
-					} else if($ext=='css'){
-						$this->css[$module.".".$key] = $libpath."/".$value;
-					}
-				} else {
-					if($ext=='js'){
-						$this->scripts[$module.".".$key] = $value;
-					} else if($ext=='css'){
-						$this->css[$module.".".$key] = $value;
-					} else {
-						$this->scripts[$module.".".$key] = $value;
-					}
-				}
+				$this->addFile($module,$key,$value);
 			}
 		}
 	}
+
+	public function addFile($module,$key,$value){
+		$ext = strtolower(pathinfo($value, PATHINFO_EXTENSION));
+		if(!is_remote_file($value)){
+			if($ext=='js'){
+				$this->scripts[$module.".".$key] = RESOURCE_PATH."/".$value;
+			} else if($ext=='css'){
+				$this->css[$module.".".$key] = RESOURCE_PATH."/".$value;
+			}
+		} else {
+			if($ext=='js'){
+				$this->scripts[$module.".".$key] = $value;
+			} else if($ext=='css'){
+				$this->css[$module.".".$key] = $value;
+			} else {
+				$this->scripts[$module.".".$key] = $value;
+			}
+		}
+	}
+
 	public function minify(){
 		foreach($this->scripts as $key=>$value){
 			//$newName = self::$BUILD_PATH.RESOURCE_PATH.preg_replace(self::$REPLACE_REGEX,"",$this->scripts[$key],1);
-			if(!is_remote_file($value) && file_exists(get_include_path().$this->scripts[$key])){
+			if(!MINIFY_FILES){
+				$this->scripts[$key] = CONTEXT_PATH.$this->scripts[$key];
+			} else if(!is_remote_file($value) && file_exists(get_include_path().$this->scripts[$key])){
 				$newName = self::$BUILD_PATH.$this->scripts[$key];
 				//echo "[".$value."-->".$newName.":::".self::$BUILD_PATH."]<br>";
 				$this->scripts[$key] = CONTEXT_PATH.str_replace(self::$BUILD_PATH,"",
@@ -107,7 +129,9 @@ class Header {
 		}
 		foreach($this->css as $key=>$value){
 			//$newName = self::$BUILD_PATH.RESOURCE_PATH.preg_replace(self::$REPLACE_REGEX,"",$this->css[$key],1);
-			if(!is_remote_file($value) && file_exists(get_include_path().$this->css[$key])){
+			if(!MINIFY_FILES){
+				$this->css[$key] = CONTEXT_PATH.$this->css[$key];
+			} else if(!is_remote_file($value) && file_exists(get_include_path().$this->css[$key])){
 				$newName = self::$BUILD_PATH.$this->css[$key];
 				//echo $key."--".$value."--".$newName."<br>";
 				$this->css[$key] =  CONTEXT_PATH.str_replace(self::$BUILD_PATH,"",
@@ -118,3 +142,4 @@ class Header {
 	}
 
 }
+

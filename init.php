@@ -1,4 +1,8 @@
 <?php 
+
+/**
+ * @package rudraxframework\core
+ */
 require_once "Console.php";
 include_once ("model/AbstractRequest.php");
 
@@ -35,7 +39,7 @@ class RudraX {
 		session_start ();
 		$DEFAULT_GLOB = parse_ini_file ("config/_project.properties", TRUE );
 		$GLOBALS ['CONFIG']= parse_ini_file ($file, TRUE );
-		
+
 		$GLOBALS ['CONFIG']['GLOBAL'] = array_merge(
 				$DEFAULT_GLOB['GLOBAL'],
 				$GLOBALS ['CONFIG']['GLOBAL']
@@ -216,7 +220,7 @@ class Browser {
 		self::$console = new Console();
 	}
 	public static function console($msgData){
-		return self::$console->browser($msgData);
+		return self::$console->browser($msgData,debug_backtrace ());
 	}
 	public static function printlogs(){
 		return self::$console->printlogs();
