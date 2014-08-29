@@ -94,7 +94,7 @@ class Header {
 			}
 		}
 	}
-
+	
 	public function addFile($module,$key,$value){
 		$ext = strtolower(pathinfo($value, PATHINFO_EXTENSION));
 		if(!is_remote_file($value)){
@@ -113,7 +113,7 @@ class Header {
 			}
 		}
 	}
-
+	
 	public function minify(){
 		foreach($this->scripts as $key=>$value){
 			//$newName = self::$BUILD_PATH.RESOURCE_PATH.preg_replace(self::$REPLACE_REGEX,"",$this->scripts[$key],1);
