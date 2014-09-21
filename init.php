@@ -173,7 +173,7 @@ class RudraX {
 					try{
 						$mod_file = $dir.'/'.$entry;
 						$mode_time = filemtime($mod_file);
-						if(!DEBUG_BUILD && isset($filemodules["_"][$mod_file]) && $mode_time == $filemodules["_"][$mod_file]){
+						if(isset($filemodules["_"][$mod_file]) && $mode_time == $filemodules["_"][$mod_file]){
 							Browser::console("from cache....");
 						} else {
 							$filemodules["_"][$mod_file] = $mode_time;
