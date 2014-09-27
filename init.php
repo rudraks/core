@@ -157,6 +157,26 @@ class RudraX {
 			return call_user_func_array($callback, $argArray);
 		}
 	}
+	
+	public static function resolvePath($str){
+		$array = explode( '/', $str);
+		$domain = array_shift( $array);
+		$parents = array();
+		foreach( $array as $dir) {
+		    switch( $dir) {
+		        case '.':
+		        // Don't need to do anything here
+		        break;
+		        case '..':
+		            array_pop( $parents);
+		        break;
+		        default:
+		            $parents[] = $dir;
+		        break;
+		    }
+		}
+		return $domain . '/' . implode( '/', $parents);
+	}
 
 	public static function getModuleProperties($dir,$filemodules = array("_" => array(),"mods" => array())){
 
@@ -182,9 +202,10 @@ class RudraX {
 							foreach($r as $mod=>$files){
 								$filemodules['mods'][$mod] = array();
 								foreach($files as $key=>$file){
-									if($key!='@' && !is_remote_file($file))
+									if($key!='@' && !is_remote_file($file)){
 										$filemodules['mods'][$mod][$key] = $dir.'/'.$file;
-									else $filemodules['mods'][$mod][$key] = $file;
+										//$filemodules['mods'][$mod][$key] = self::resolvePath($dir.'/'.$file);
+									} else $filemodules['mods'][$mod][$key] = $file;
 								}
 							}
 						}
