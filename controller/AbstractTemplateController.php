@@ -59,6 +59,9 @@ class AbstractTemplateController extends AbstractSmartyController {
 				} else {
 					$tpl->display($this->getViewPath() . $view . Config::get('TEMP_EXT'));
 				}
+				if(BROWSER_LOGS){
+					Browser::printlogs();
+				}
 			} else if ($tempClass->hasMethod("invoke" )) {
 				$view = $temp->invoke();
 				if (! isset($view )) {

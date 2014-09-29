@@ -194,11 +194,11 @@ class RudraX {
 						$mod_file = $dir.'/'.$entry;
 						$mode_time = filemtime($mod_file);
 						if(isset($filemodules["_"][$mod_file]) && $mode_time == $filemodules["_"][$mod_file]){
-							Browser::console("from cache....");
+							//Browser::console("from cache....");
 						} else {
 							$filemodules["_"][$mod_file] = $mode_time;
 							$r = parse_ini_file ($dir.'/'.$entry, TRUE );
-							Browser::console($dir.'/'.$entry);
+							//Browser::console($dir.'/'.$entry);
 							foreach($r as $mod=>$files){
 								$filemodules['mods'][$mod] = array();
 								foreach($files as $key=>$file){
@@ -241,6 +241,15 @@ class Browser {
 		self::$console = new Console();
 	}
 	public static function console($msgData){
+		return self::$console->browser($msgData,debug_backtrace ());
+	}
+	public static function log(){
+		$args = func_get_args ();
+		$msgData = "\"";
+		foreach ($args as $key=>$val){
+			$msgData = $msgData.",".json_encode($val);
+		}
+		$msgData = $msgData.",\"";
 		return self::$console->browser($msgData,debug_backtrace ());
 	}
 	public static function printlogs(){
