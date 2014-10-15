@@ -17,10 +17,11 @@ class AbstractUser {
 	public $valid;
 	public $uname;
 	public $uid;
-	private $info = array();
+	private $info;
 
 	public function  __construct(){
 		if(self::$usercache ==NULL) self::$usercache = new RxCache('user');
+		$this->info = array();
 	}
 
 	public function set($key,$value){
@@ -28,12 +29,16 @@ class AbstractUser {
 	}
 
 	public function get($key){
-		return $this->info[$key];
+		return isset($this->info[$key]) ? $this->info[$key] : null;
+	}
+	public function getData(){
+		return $this->info;
 	}
 
 	public function validate() {
 		if (isset($_SESSION['uid']) && trim($_SESSION['uid'])) {
 			$info = self::$usercache->get($_SESSION['uid']);
+			//Browser::log("info",$info);
 			if($info){
 				$this->valid = TRUE;
 				$this->uid = $_SESSION['uid'];
@@ -53,6 +58,8 @@ class AbstractUser {
 		session_regenerate_id();
 		$_SESSION['uid'] = $this->uid;
 		$_SESSION['uname'] = $this->uname;
+		$this->info['uid'] = $this->uid; 
+		$this->info['uname'] = $this->uname;
 		$this->save();
 		session_write_close();
 	}
@@ -75,7 +82,9 @@ class AbstractUser {
 		return $this->valid;
 	}
 	public function save() {
+		Browser::log($this->uid,$this->info);
 		self::$usercache->set($this->uid,$this->info);
+		Browser::log(self::$usercache->get($this->uid));
 	}
 
 }

@@ -101,6 +101,18 @@ class RudraX {
 		}
 		return new DataController();
 	}
+
+	public static function invokeHandler ($handlerName){
+		self::includeUser();
+		if (file_exists(get_include_path() . CONTROLLER_PATH . "/NoController.php" )) {
+			include_once (CONTROLLER_PATH . "/NoController.php");
+		} else {
+			include_once ("controller/NoController.php");
+		}
+		$controller = new NoController();
+		return $controller->invokeHandler($handlerName);
+	}
+
 	public static function includeUser(){
 		include_once ("model/AbstractUser.php");
 		if (file_exists ( get_include_path () . MODEL_PATH . "/User.php" )) {
@@ -157,23 +169,23 @@ class RudraX {
 			return call_user_func_array($callback, $argArray);
 		}
 	}
-	
+
 	public static function resolvePath($str){
 		$array = explode( '/', $str);
 		$domain = array_shift( $array);
 		$parents = array();
 		foreach( $array as $dir) {
-		    switch( $dir) {
-		        case '.':
-		        // Don't need to do anything here
-		        break;
-		        case '..':
-		            array_pop( $parents);
-		        break;
-		        default:
-		            $parents[] = $dir;
-		        break;
-		    }
+			switch( $dir) {
+				case '.':
+					// Don't need to do anything here
+					break;
+				case '..':
+					array_pop( $parents);
+					break;
+				default:
+					$parents[] = $dir;
+					break;
+			}
 		}
 		return $domain . '/' . implode( '/', $parents);
 	}

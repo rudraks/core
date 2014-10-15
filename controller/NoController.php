@@ -3,18 +3,11 @@
 /*
  * To change this license header, choose License Headers in Project Properties. To change this template file, choose Tools | Templates and open the template in the editor.
 */
-include_once (LIB_PATH . "/rudrax/smarty/Smarty.class.php");
 include_once (RUDRA . "/core/controller/AbstractController.php");
-include_once (RUDRA . "/core/model/Header.php");
-include_once (RUDRA . "/core/model/Page.php");
 
-class AbstractPageController extends AbstractController {
+class NoController extends AbstractController {
 
 	public function getHandlerPath() {
-		return "";
-	}
-
-	public function getViewPath() {
 		return "";
 	}
 
@@ -29,24 +22,33 @@ class AbstractPageController extends AbstractController {
 			$temp = $tempClass->newInstance();
 		}
 		if ($temp != NULL) {
-			$temp->setUser($user );
-
-			if ($tempClass->hasMethod("invokeHandler" )) {
+			$isPage = is_subclass_of($temp, 'AbstractPageHandler');
+			$isTemplate = is_subclass_of($temp, 'AbstractTemplateHandler');
+			$isData = is_subclass_of($temp, 'AbstractDataHandler');
+			
+			if($isPage || $isTemplate){
+				include_once (LIB_PATH . "/rudrax/smarty/Smarty.class.php");
+				if($isPage){
+					include_once (RUDRA . "/core/model/Header.php");
+					include_once (RUDRA . "/core/model/Page.php");
+				}
+			}
+			
+			$temp->setUser($user);
+			if($isPage){
 				$tpl = new Smarty();
-				// $tpl->prepare();
 				self::setSmartyPaths($tpl);
-				// $tpl->testInstall(); exit;
 				$tpl->debugging = Config::get('SMARTY_DEBUG');
 				$temp->setTemplate($tpl );
 				$header = new Header($tpl);
 				$page = new Page();
 				$view = RudraX::invokeMethodByReflectionClass($tempClass,$temp,'invokeHandler',array(
-					'tpl' => $tpl,
-					'viewModel' => $tpl,
-					'user' => $user,
-					'header' => $header,
-					'page' => $page,
-					'dataModel' => $page->data
+						'tpl' => $tpl,
+						'viewModel' => $tpl,
+						'user' => $user,
+						'header' => $header,
+						'page' => $page,
+						'dataModel' => $page->data
 				));
 				//$view = $temp->invokeHandler($tpl );
 				if (! isset($view )) {
@@ -70,13 +72,14 @@ class AbstractPageController extends AbstractController {
 				if(BROWSER_LOGS){
 					Browser::printlogs();
 				}
-				
-			} else if ($tempClass->hasMethod("invoke" )) {
-				$view = $temp->invoke();
-				if (! isset($view )) {
-					$view = $handlerName;
+			} else if (is_subclass_of($temp, 'AbstractHandler')) {
+				if ($tempClass->hasMethod("invokeHandler" )) {
+					RudraX::invokeMethodByReflectionClass($tempClass,$temp,'invokeHandler',array(
+					'user' => $user
+					));
 				}
-				include $this->getViewPath() . $view . '.php';
+			} else {
+				
 			}
 		}
 	}

@@ -46,3 +46,12 @@ class AbstractHandler {
 		return $this->tpl->newBlock($blockName);
 	}
 }
+class AbstractPageHandler extends AbstractHandler {
+
+}
+class AbstractTemplateHandler extends AbstractHandler {
+
+}
+class AbstractDataHandler extends AbstractHandler {
+
+}

@@ -6,7 +6,7 @@
 include_once (LIB_PATH . "/rudrax/smarty/Smarty.class.php");
 include_once (RUDRA . "/core/controller/AbstractController.php");
 
-class AbstractTemplateController extends AbstractSmartyController {
+class AbstractTemplateController extends AbstractController {
 
 	public function getHandlerPath() {
 		return "";
