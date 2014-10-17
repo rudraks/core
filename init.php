@@ -34,11 +34,15 @@ class RudraX {
 		return self::$websitecache;
 	}
 
-	public static function loadConfig($file){
+	public static function loadConfig($file,$file2=null){
 		ob_start ();
 		session_start ();
 		$DEFAULT_GLOB = parse_ini_file ("config/_project.properties", TRUE );
 		$GLOBALS ['CONFIG']= parse_ini_file ($file, TRUE );
+		
+		if($file2!=null && file_exists($file2)){
+			$GLOBALS ['CONFIG'] = array_merge($GLOBALS ['CONFIG'],parse_ini_file ($file2, TRUE ));
+		}
 
 		$GLOBALS ['CONFIG']['GLOBAL'] = array_merge(
 				$DEFAULT_GLOB['GLOBAL'],
