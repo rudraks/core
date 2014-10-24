@@ -41,6 +41,7 @@ class NoController extends AbstractController {
 				self::setSmartyPaths($tpl);
 				$tpl->debugging = Config::get('SMARTY_DEBUG');
 				$temp->setTemplate($tpl );
+				$header = new Header($tpl);
 				$page = new Page();
 				
 				if($isPage){
@@ -97,6 +98,21 @@ class NoController extends AbstractController {
 						$tpl->display($this->getViewPath() . $view . Config::get('TEMP_EXT'));
 					}
 				}
+				$header->minify();
+				$tpl->assign('user',$user);
+				$tpl->assign('page',$page);
+				$tpl->assign('CONTEXT_PATH',CONTEXT_PATH);
+				$tpl->assign('RESOURCE_PATH',Config::get('RESOURCE_PATH'));
+				$tpl->assign('METAS',$header->metas);
+				$tpl->assign('TITLE',$header->title);
+				$tpl->assign('CSS_FILES',$header->css);
+				$tpl->assign('SCRIPT_FILES',$header->scripts);
+				$tpl->assign('BODY_FILES',$view . Config::get('TEMP_EXT'));
+				$tpl->assign('page_json',json_encode($page->data->data));
+				//echo get_include_path();
+				//$tpl->display($this->getViewPath() . $view . Config::get('TEMP_EXT'));
+				$tpl->display(get_include_path().RUDRA."/core/view/full.tpl");
+				//$header->minified->logs();
 				if(BROWSER_LOGS){
 					Browser::printlogs();
 				}
