@@ -4,7 +4,7 @@
     "description": "Suporting library for Rudrax",
     "keywords": ["rudra", "API", "controller","smarty"],
     "license": "MIT",
-    "version" : "1.0",
+    "version" : "1.2.1",
     
     "require": {
         "rudrax/smarty": "dev-master",
