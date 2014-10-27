@@ -33,6 +33,7 @@ abstract class AbstractController {
 		}
 		$this->user->save();
 	}
+	abstract public function invoke(User $user, $handlerName);
 	protected static function setSmartyPaths(Smarty $viewModel){
 		$viewModel->setTemplateDir(get_include_path() .Config::get('VIEW_PATH'));
 		$viewModel->setConfigDir(get_include_path() . Config::get('CONFIG_PATH'));
@@ -51,5 +52,4 @@ abstract class AbstractController {
 		}
 		$viewModel->setCompileDir($TEMP_PATH);
 	}
-	abstract public function invoke(User $user, $handlerName);
 }

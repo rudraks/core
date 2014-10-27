@@ -6,22 +6,7 @@
 * and open the template in the editor.
 */
 
-class AbstractHandler {
-
-	public $tpl;
-	public $user;
-
-	public function setUser($user) {
-		$this->user = $user;
-	}
-
-	public function getUser() {
-		return $this->user;
-	}
-
-	public function setTemplate($tpl) {
-		$this->tpl = $tpl;
-	}
+abstract class AbstractHandler {
 
 	public function requestGet($key) {
 		if (isset($_GET[$key])) {
@@ -34,24 +19,28 @@ class AbstractHandler {
 		} return FALSE;
 	}
 
-	public function setValue($key, $value) {
-		$this->tpl->assign($key, $value);
+	public function getHandlerParams($params){
+		return $params;
 	}
-
-	public function selectBlock($blockName) {
-		return $this->tpl->newBlock($blockName);
+	abstract public function _invokeHandler(User $user, $handlerName,$handlerClass);
+}
+abstract class AbstractSmartyHandler extends AbstractHandler {
+	protected static function setSmartyPaths(Smarty $viewModel){
+		$viewModel->setTemplateDir(get_include_path() .Config::get('VIEW_PATH'));
+		$viewModel->setConfigDir(get_include_path() . Config::get('CONFIG_PATH'));
+		$CACHE_PATH = get_include_path() . Config::get('BUILD_PATH').'/cache';
+		if (!file_exists($CACHE_PATH)) {
+			if(!mkdir($CACHE_PATH, 0777, true)){
+				die('Failed to create folders:'.$CACHE_PATH);
+			};
+		}
+		$viewModel->setCacheDir($CACHE_PATH);
+		$TEMP_PATH = get_include_path() . Config::get('BUILD_PATH').'/temp';
+		if (!file_exists($TEMP_PATH)) {
+			if(!mkdir($TEMP_PATH, 0777, true)){
+				die('Failed to create folders:'.$TEMP_PATH);
+			};
+		}
+		$viewModel->setCompileDir($TEMP_PATH);
 	}
-
-	public function gotoBlock($blockName) {
-		return $this->tpl->newBlock($blockName);
-	}
-}
-class AbstractPageHandler extends AbstractHandler {
-
-}
-class AbstractTemplateHandler extends AbstractHandler {
-
-}
-class AbstractDataHandler extends AbstractHandler {
-
 }

@@ -27,7 +27,7 @@ class Header {
 	public static $REPLACE_REGEX;
 	public static $BUILD_PATH;
 
-	public function  __construct(Smarty $tpl){
+	public function  __construct(){
 		$this->modules = Rudrax::getModules();
 		$this->minified = new Minifier( array(
 				'echo' => false,
