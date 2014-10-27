@@ -22,7 +22,14 @@ abstract class AbstractHandler {
 	public function getHandlerParams($params){
 		return $params;
 	}
-	abstract public function _invokeHandler(User $user, $handlerName,$handlerClass);
+	public function _invokeHandler(User $user, $handlerName,$handlerClass){
+		if ($handlerClass->hasMethod("invokeHandler" )) {
+			$resp =  RudraX::invokeMethodByReflectionClass($handlerClass,$this,'invokeHandler',array(
+					'user' => $user
+			));
+			if(isset($resp)) echo  $resp;
+		}
+	}
 }
 abstract class AbstractSmartyHandler extends AbstractHandler {
 	protected static function setSmartyPaths(Smarty $viewModel){

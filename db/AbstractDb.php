@@ -79,6 +79,7 @@ class AbstractDb
 	public function fetch($sql)
 	{
 		$sql = $this->_prepare(func_get_args());
+		$this->cur_sql = $sql;
 		if($this->printQ)  echo '<h5>'.$sql.'<h5/>';
 		$sth = $this->_link->prepare($sql);
 		$sth->execute();
