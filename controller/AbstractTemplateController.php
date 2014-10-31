@@ -63,10 +63,11 @@ class AbstractTemplateController extends AbstractController {
 				} else {
 					$tpl->display($this->getViewPath() . $view . Config::get('TEMP_EXT'));
 				}
+				echo "<rx::data/>";
 				if(BROWSER_LOGS){
 					Browser::printlogs();
 				}
-				echo "::rx::data::".json_encode($page->data->data);
+				echo "<rx::data/>".json_encode($page->data->data);
 			} else if ($tempClass->hasMethod("invoke" )) {
 				$view = $temp->invoke();
 				if (! isset($view )) {
