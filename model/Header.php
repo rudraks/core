@@ -57,7 +57,7 @@ class Header {
 	}
 
 	private function _import($module){
-		Browser::console($module);
+		//Browser::console($module);
 		if(isset($this->modules[$module]) && !isset($this->dones[$module])){
 			$this->dones[$module] = $module;
 			$this->add($module,$this->modules[$module]);
