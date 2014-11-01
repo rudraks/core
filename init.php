@@ -164,11 +164,10 @@ class RudraX {
 		preg_match("/".$mapper."/",str_replace( array("/"),
 		array("#"),Q),$varmap);
 
-		$request =  HttpRequest::getInstance()->loadParams($varmap);
-		$argArray = self::getArgsArray(new ReflectionFunction($callback),$varmap,NULL,TRUE);
-		$request->loadParams($argArray);
-		//print_r($argArray);
 		if(count($varmap)>0){
+			$request =  HttpRequest::getInstance()->loadParams($varmap);
+			$argArray = self::getArgsArray(new ReflectionFunction($callback),$varmap,NULL,TRUE);
+			$request->loadParams($argArray);
 			self::$REQUEST_MAPPED = TRUE;
 			return call_user_func_array($callback, $argArray);
 		}
