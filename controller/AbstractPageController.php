@@ -29,7 +29,6 @@ class AbstractPageController extends AbstractController {
 			$temp = $tempClass->newInstance();
 		}
 		if ($temp != NULL) {
-			$temp->setUser($user );
 
 			if ($tempClass->hasMethod("invokeHandler" )) {
 				$tpl = new Smarty();
@@ -37,7 +36,6 @@ class AbstractPageController extends AbstractController {
 				self::setSmartyPaths($tpl);
 				// $tpl->testInstall(); exit;
 				$tpl->debugging = Config::get('SMARTY_DEBUG');
-				$temp->setTemplate($tpl );
 				$header = new Header($tpl);
 				$page = new Page();
 				$view = RudraX::invokeMethodByReflectionClass($tempClass,$temp,'invokeHandler',array(

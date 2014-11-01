@@ -24,7 +24,6 @@ class AbstractDataController extends AbstractController {
 		}
 
 		if ($temp != NULL) {
-			$temp->setUser($user );
 			if ($tempClass->hasMethod("invokeHandler" )) {
 				//$eventRequest = new EventRequest();
 				//$eventRequest->setData();

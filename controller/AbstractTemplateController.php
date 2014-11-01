@@ -29,7 +29,6 @@ class AbstractTemplateController extends AbstractController {
 		}
 		
 		if ($temp != NULL) {
-			$temp->setUser($user );
 
 			if ($tempClass->hasMethod("invokeHandler" )) {
 				$tpl = new Smarty();
@@ -37,7 +36,6 @@ class AbstractTemplateController extends AbstractController {
 				self::setSmartyPaths($tpl);
 				// $tpl->testInstall(); exit;
 				$tpl->debugging = Config::get('SMARTY_DEBUG');
-				$temp->setTemplate($tpl);
 				$page = new Page();
 				$view = RudraX::invokeMethodByReflectionClass($tempClass,$temp,'invokeHandler',array(
 						'tpl' => $tpl,
@@ -63,11 +61,11 @@ class AbstractTemplateController extends AbstractController {
 				} else {
 					$tpl->display($this->getViewPath() . $view . Config::get('TEMP_EXT'));
 				}
-				echo "<rx::data/>";
+				echo TEMP_DELIMITER;
 				if(BROWSER_LOGS){
 					Browser::printlogs();
 				}
-				echo "<rx::data/>".json_encode($page->data->data);
+				echo TEMP_DELIMITER.json_encode($page->data->data);
 			} else if ($tempClass->hasMethod("invoke" )) {
 				$view = $temp->invoke();
 				if (! isset($view )) {
