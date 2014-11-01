@@ -25,7 +25,6 @@ class RudraX {
 		}	else self::$webmodules =self::WebCache()->get('modules');
 	}
 
-
 	public static function getModules(){
 		return self::$webmodules['mods'];
 	}
