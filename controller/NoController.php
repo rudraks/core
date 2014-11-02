@@ -12,10 +12,11 @@ class NoController extends AbstractController {
 	}
 
 	public function invoke(User $user, $handlerName) {
-		$className = ucfirst($handlerName );
+		$class_info = Rudrax::classInfo($handlerName );
+		$className = $class_info["class_name"];
 		$user->validate();
 		include_once(RUDRA . "/core/handler/AbstractHandler.php");
-		include_once (HANDLER_PATH . "/" . $this->getHandlerPath() . $className . ".php");
+		include_once (HANDLER_PATH . "/". $className . ".php");
 		$tempClass = new ReflectionClass($className );
 		global $temp;
 		if ($tempClass->isInstantiable()) {

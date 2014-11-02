@@ -38,7 +38,7 @@ class RudraX {
 		session_start ();
 		$DEFAULT_GLOB = parse_ini_file ("config/_project.properties", TRUE );
 		$GLOBALS ['CONFIG']= parse_ini_file ($file, TRUE );
-		
+
 		if($file2!=null && file_exists($file2)){
 			$GLOBALS ['CONFIG'] = array_merge($GLOBALS ['CONFIG'],parse_ini_file ($file2, TRUE ));
 		}
@@ -156,20 +156,34 @@ class RudraX {
 		return call_user_func_array(array($object, $methodName), self::getArgsArray($reflectionMethod,$argArray));
 	}
 
+	public static $url_callback = null;
+	public static $url_size = 0;
+	public static $url_varmap = null;
+
+	public static function mapRequestInvoke (){
+		return self::_mapRequest(self::$url_varmap,self::$url_callback);
+	}
 	public static function mapRequest ($mapping,$callback){
 		if(self::$REQUEST_MAPPED) return;
 		$mapper = preg_replace('/\{(.*?)\}/m','(?P<$1>[\w\.]*)', str_replace('/','#',$mapping));
-		$varmap = array();
-		preg_match("/".$mapper."/",str_replace( array("/"),
-		array("#"),Q),$varmap);
-
-		if(count($varmap)>0){
-			$request =  HttpRequest::getInstance()->loadParams($varmap);
-			$argArray = self::getArgsArray(new ReflectionFunction($callback),$varmap,NULL,TRUE);
-			$request->loadParams($argArray);
-			self::$REQUEST_MAPPED = TRUE;
-			return call_user_func_array($callback, $argArray);
+		$mapperArray = explode("#",$mapper);
+		$mapperSize = (empty($mapping) ? 0 : count($mapperArray))+1;
+		if(self::$url_size < $mapperSize){
+			$varmap = array();
+			preg_match("/".$mapper."/",str_replace( "/","#",Q),$varmap);
+			if(count($varmap)>0){
+				self::$url_size = $mapperSize;
+				self::$url_callback = $callback;
+				self::$url_varmap = $varmap;
+			}
 		}
+	}
+	public static function _mapRequest ($varmap,$callback){
+		$request =  HttpRequest::getInstance()->loadParams($varmap);
+		$argArray = self::getArgsArray(new ReflectionFunction($callback),$varmap,NULL,TRUE);
+		$request->loadParams($argArray);
+		self::$REQUEST_MAPPED = TRUE;
+		return call_user_func_array($callback, $argArray);
 	}
 
 	public static function resolvePath($str){
@@ -190,6 +204,14 @@ class RudraX {
 			}
 		}
 		return $domain . '/' . implode( '/', $parents);
+	}
+
+	public static function classInfo($path){
+		$info = explode("/",$path);
+		return array(
+				"class_name" =>	end($info),
+				"file_path" => $path
+		);
 	}
 
 	public static function getModuleProperties($dir,$filemodules = array("_" => array(),"mods" => array())){
