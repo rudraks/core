@@ -5,7 +5,7 @@
  */
 require_once "Console.php";
 include_once ("model/AbstractRequest.php");
-
+global $RDb;
 class RudraX {
 
 	public static $websitecache;
@@ -239,8 +239,8 @@ class RudraX {
 								$filemodules['mods'][$mod] = array();
 								foreach($files as $key=>$file){
 									if($key!='@' && !is_remote_file($file)){
-										//$filemodules['mods'][$mod][$key] = $dir.'/'.$file;
-										$filemodules['mods'][$mod][$key] = self::resolvePath($dir.'/'.$file);
+										$filemodules['mods'][$mod][$key] = $dir.'/'.$file;
+										//$filemodules['mods'][$mod][$key] = self::resolvePath($dir.'/'.$file);
 									} else $filemodules['mods'][$mod][$key] = $file;
 								}
 							}
@@ -253,6 +253,38 @@ class RudraX {
 		}
 		$d->close();
 		return $filemodules;
+	}
+
+	public static function invoke($_conf=array()){
+		$conf = array_merge(array(
+				'controller' => 'web.php',
+				'DEFAULT_DB' => 'DB1'
+		),$_conf);
+		//Loads all the Constants
+		self::loadConfig("../app/config/project.properties","../local/project.properties");
+		//Initialze Rudrax
+		self::init();
+		global $RDb;
+		if(isset($conf["DEFAULT_DB"])){
+			$RDb = self::getDB($conf["DEFAULT_DB"]);
+		}
+		// Define Custom Request Plugs
+		require_once(APP_PATH."/controller/".$conf["controller"]);
+
+		// Default RudraX Plug
+		self::mapRequest("template/{temp}",function($temp="nohandler"){
+			return self::invokeHandler($temp);
+		});
+		self::mapRequest('data/{eventname}',function($eventName="dataHandler"){
+			$controller = self::getDataController();
+			$controller->invokeHandler($eventName);
+		});
+		// Default Plug for default page
+		self::mapRequest("",function(){
+			return self::invokeHandler("Index");
+		});
+		self::mapRequestInvoke();
+		$RDb->close();
 	}
 
 }
