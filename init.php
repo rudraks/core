@@ -17,6 +17,8 @@ class RudraX {
 		include_once ("model/RxCache.php");
 		if(self::$browser==NULL)
 			self::$browser = new Browser();
+	}
+	public static function scanModules(){
 		self::$webmodules = self::WebCache()->get('modules');
 		if(DEBUG_BUILD || !self::$webmodules){
 			self::$webmodules = self::getModuleProperties(get_include_path().LIB_PATH,self::$webmodules);
@@ -24,8 +26,10 @@ class RudraX {
 			self::WebCache()->set('modules',self::$webmodules);
 		}	else self::$webmodules =self::WebCache()->get('modules');
 	}
-
 	public static function getModules(){
+		if(self::$webmodules==null){
+			self::scanModules();
+		}
 		return self::$webmodules['mods'];
 	}
 	public static function WebCache(){
@@ -229,17 +233,19 @@ class RudraX {
 					try{
 						$mod_file = $dir.'/'.$entry;
 						$mode_time = filemtime($mod_file);
-						if(isset($filemodules["_"][$mod_file]) && $mode_time == $filemodules["_"][$mod_file]){
-							//Browser::console("from cache....");
+						if(!DEBUG_BUILD && isset($filemodules["_"][$mod_file]) 
+							&& $mode_time == $filemodules["_"][$mod_file]){
+							Browser::console("from-cache....".$mod_file);
 						} else {
+							Browser::console("fresh ....",$mod_file);
 							$filemodules["_"][$mod_file] = $mode_time;
 							$r = parse_ini_file ($dir.'/'.$entry, TRUE );
 							//Browser::console($dir.'/'.$entry);
 							foreach($r as $mod=>$files){
-								$filemodules['mods'][$mod] = array();
+								$filemodules['mods'][$mod] = array("files"=>array());
 								foreach($files as $key=>$file){
 									if($key!='@' && !is_remote_file($file)){
-										$filemodules['mods'][$mod][$key] = $dir.'/'.$file;
+										$filemodules['mods'][$mod]["files"][] = $dir.'/'.$file;
 										//$filemodules['mods'][$mod][$key] = self::resolvePath($dir.'/'.$file);
 									} else $filemodules['mods'][$mod][$key] = $file;
 								}
@@ -278,6 +284,9 @@ class RudraX {
 		self::mapRequest('data/{eventname}',function($eventName="dataHandler"){
 			$controller = self::getDataController();
 			$controller->invokeHandler($eventName);
+		});
+		self::mapRequest("resources.json",function($cb=""){
+			echo $cb."(".json_encode(self::getModules()).")"; 
 		});
 		// Default Plug for default page
 		self::mapRequest("",function(){

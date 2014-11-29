@@ -28,7 +28,6 @@ class Header {
 	public static $BUILD_PATH;
 
 	public function  __construct(){
-		$this->modules = Rudrax::getModules();
 		$this->minified = new Minifier( array(
 				'echo' => false,
 				'encode' => true,
@@ -51,6 +50,9 @@ class Header {
 	}
 
 	public function import(){
+		if($this->modules==null){
+			$this->modules = Rudrax::getModules();
+		}
 		foreach(func_get_args() as $module){
 			$this->_import($module);
 		}
@@ -70,8 +72,8 @@ class Header {
 				$super_module = implode('/',$moduleSplit);
 				//Browser::console($super_module);
 				if(isset($this->modules[$super_module])
-						&& isset($this->modules[$super_module][$last])
-						&& !isset($this->dones[$super_module])){
+				&& isset($this->modules[$super_module][$last])
+				&& !isset($this->dones[$super_module])){
 					$this->addFile($super_module,$moduleSplit[$size-2],
 							$this->modules[$super_module][$last]);
 				}
@@ -87,14 +89,17 @@ class Header {
 				$this->import($value);
 			}
 		}
-
-		foreach($list as $key=>$value){
-			if($key!='@'){
+		$files = $list["files"];
+//		echo "<hr/>";
+//		echo print_r($files);
+		if($files!=null){
+			foreach($files as $key=>$value){
+	//			echo $module."::".$key."::".$value;
 				$this->addFile($module,$key,$value);
 			}
 		}
 	}
-	
+
 	public function addFile($module,$key,$value){
 		$ext = strtolower(pathinfo($value, PATHINFO_EXTENSION));
 		if(!is_remote_file($value)){
@@ -113,7 +118,7 @@ class Header {
 			}
 		}
 	}
-	
+
 	public function minify(){
 		foreach($this->scripts as $key=>$value){
 			//$newName = self::$BUILD_PATH.RESOURCE_PATH.preg_replace(self::$REPLACE_REGEX,"",$this->scripts[$key],1);
