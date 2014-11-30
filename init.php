@@ -237,7 +237,7 @@ class RudraX {
 							&& $mode_time == $filemodules["_"][$mod_file]){
 							Browser::console("from-cache....".$mod_file);
 						} else {
-							Browser::console("fresh ....",$mod_file);
+							if(DEBUG_BUILD) Browser::console("fresh ....",$mod_file);
 							$filemodules["_"][$mod_file] = $mode_time;
 							$r = parse_ini_file ($dir.'/'.$entry, TRUE );
 							//Browser::console($dir.'/'.$entry);
@@ -318,7 +318,7 @@ class Browser {
 		self::$console = new Console();
 	}
 	public static function console($msgData){
-		return self::$console->browser($msgData,debug_backtrace ());
+		if(DEBUG_BUILD) return self::$console->browser($msgData,debug_backtrace ());
 	}
 	public static function log(){
 		$args = func_get_args ();

@@ -28,7 +28,6 @@ var CONTEXT_PATH = '{$CONTEXT_PATH}';
 <div id="templates" style="height:0px;"></div>
 <div id="page_json" data-value='{$page_json}'></div>
 <div id="script_logs"></div>
-
 </body>
 
 
