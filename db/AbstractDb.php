@@ -80,7 +80,7 @@ class AbstractDb
 	{
 		$sql = $this->_prepare(func_get_args());
 		$this->cur_sql = $sql;
-		if($this->printQ)  echo '<h5>'.$sql.'<h5/>';
+		if($this->printQ)  Browser::log($sql);
 		$sth = $this->_link->prepare($sql);
 		$sth->execute();
 		$res = array();
@@ -99,7 +99,7 @@ class AbstractDb
 	public function fetchAll($sql)
 	{
 		$sql = $this->_prepare(func_get_args());
-		if($this->printQ)  echo '<h5>'.$sql.'<h5/>';
+		if($this->printQ)  Browser::log($sql);
 		$sth = $this->_link->prepare($sql);
 		$sth->execute();
 		$res = array();
@@ -120,6 +120,7 @@ class AbstractDb
 	public function update()
 	{
 		$sql = $this->_prepare(func_get_args());
+		if($this->printQ)  Browser::log($sql);
 		return $this->query($sql);
 	}
 
@@ -136,7 +137,6 @@ class AbstractDb
 		$query = $this->_prepare(func_get_args());
 		if (!($res = $this->_link->query($query))) {
 			$arr = $this->_link->errorInfo();
-			Console::log("SQL Error: " . $sql . "  ({$arr[2]}) ");
 		}
 		return $res;
 	}
@@ -207,7 +207,7 @@ class AbstractDb
 				break;
 			default:
 				//$this->_fetchMode = PDO::FETCH_OBJ;
-				Console::log("Invalid fetch mode ".$mode." specified");
+				Browser::log ("Invalid fetch mode ".$mode." specified");
 				break;
 		}
 	}

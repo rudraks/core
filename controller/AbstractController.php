@@ -51,5 +51,9 @@ abstract class AbstractController {
 			};
 		}
 		$viewModel->setCompileDir($TEMP_PATH);
+		$LOCAL_PLUGIN_PATH = get_include_path() . Config::get('LOCAL_PLUGIN_PATH');
+		if (file_exists($LOCAL_PLUGIN_PATH)) {
+			$viewModel->addPluginsDir($LOCAL_PLUGIN_PATH);
+		}
 	}
 }
