@@ -23,6 +23,7 @@ class Header {
 	public $css = array();
 	public $dones = array();
 	public $modules =  array();
+	public $files_done =  array();
 	public $minified;
 	public static $REPLACE_REGEX;
 	public static $BUILD_PATH;
@@ -100,21 +101,25 @@ class Header {
 		}
 	}
 
+	public function getKey($module,$key, $value){
+		//return $module.".".$key;
+		return $value;
+	}
 	public function addFile($module,$key,$value){
 		$ext = strtolower(pathinfo($value, PATHINFO_EXTENSION));
 		if(!is_remote_file($value)){
 			if($ext=='js'){
-				$this->scripts[$module.".".$key] = RESOURCE_PATH."/".$value;
+				$this->scripts[$this->getKey($module,$key,$value)] = RESOURCE_PATH."/".$value;
 			} else if($ext=='css'){
-				$this->css[$module.".".$key] = RESOURCE_PATH."/".$value;
+				$this->css[$this->getKey($module,$key,$value)] = RESOURCE_PATH."/".$value;
 			}
 		} else {
 			if($ext=='js'){
-				$this->scripts[$module.".".$key] = $value;
+				$this->scripts[$this->getKey($module,$key,$value)] = $value;
 			} else if($ext=='css'){
-				$this->css[$module.".".$key] = $value;
+				$this->css[$this->getKey($module,$key,$value)] = $value;
 			} else {
-				$this->scripts[$module.".".$key] = $value;
+				$this->scripts[$this->getKey($module,$key,$value)] = $value;
 			}
 		}
 	}
@@ -131,6 +136,7 @@ class Header {
 						$this->minified->minify(get_include_path().$value,$newName)
 				);
 			} //else $this->scripts[$key] = CONTEXT_PATH.$this->scripts[$key];
+			//$files_done[$this->scripts[$key]] = 
 		}
 		foreach($this->css as $key=>$value){
 			//$newName = self::$BUILD_PATH.RESOURCE_PATH.preg_replace(self::$REPLACE_REGEX,"",$this->css[$key],1);

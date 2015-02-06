@@ -3,6 +3,7 @@
 /**
  * @package rudraxframework\core
  */
+require_once "php_functions.php";
 require_once "Console.php";
 include_once ("model/AbstractRequest.php");
 global $RDb;
@@ -306,7 +307,7 @@ class Config {
 	public static function get($section,$prop=NULL){
 		if(isset($GLOBALS['CONFIG'][$section])){
 			return $GLOBALS['CONFIG'][$section];
-		} else return constant($section);
+		} else return defined($section) ? constant($section) : FALSE;
 	}
 }
 
@@ -331,14 +332,6 @@ class Browser {
 	}
 	public static function printlogs(){
 		return self::$console->printlogs();
-	}
-}
-
-function is_remote_file( $file ){
-	if( preg_match( "/(http|https)/", $file ) ){ //It is a remote file
-		return true;
-	} else { //Local file
-		return false;
 	}
 }
 ?>
