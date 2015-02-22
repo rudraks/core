@@ -85,7 +85,7 @@ class Header {
 	private function add($module,$list){
 
 		if(isset($list['@'])){
-			$modules = explode(',',$list['@']);
+			$modules = $list['@'];//explode(',',$list['@']);
 			foreach($modules as $key=>$value){
 				$this->import($value);
 			}

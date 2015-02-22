@@ -245,7 +245,9 @@ class RudraX {
 							foreach($r as $mod=>$files){
 								$filemodules['mods'][$mod] = array("files"=>array());
 								foreach($files as $key=>$file){
-									if($key!='@' && !is_remote_file($file)){
+									if($key=='@'){
+										$filemodules['mods'][$mod][$key] = explode(',',$file);
+									} else if($key!='@' && !is_remote_file($file)){
 										$filemodules['mods'][$mod]["files"][] = $dir.'/'.$file;
 										//$filemodules['mods'][$mod][$key] = self::resolvePath($dir.'/'.$file);
 									} else $filemodules['mods'][$mod][$key] = $file;
