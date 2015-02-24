@@ -9,10 +9,12 @@ include_once ("model/AbstractRequest.php");
 global $RDb;
 class RudraX {
 
+	public static $CONFIG_FILE_NAME = '../build/rudrax_core_config.php';
 	public static $websitecache;
 	public static $webmodules;
 	public static $REQUEST_MAPPED = FALSE;
 	public static $browser;
+	private static $mtime;
 
 	public static function init(){
 		include_once ("model/RxCache.php");
@@ -37,21 +39,37 @@ class RudraX {
 		if(self::$websitecache ==NULL) self::$websitecache = new RxCache('rudrax');
 		return self::$websitecache;
 	}
+	
+	public static function readConfig($cache,$file,$file2=null){
+		$config = array();
+		if($cache && file_exists(self::$CONFIG_FILE_NAME)){
+			$config = include_once self::$CONFIG_FILE_NAME;
+		} else {
+			$DEFAULT_GLOB = parse_ini_file ("config/_project.properties", TRUE );
+			$config= parse_ini_file ($file, TRUE );
+			
+			if($file2!=null && file_exists($file2)){
+				$config = array_merge($config,parse_ini_file ($file2, TRUE ));
+			}
+			
+			$config['GLOBAL'] = array_merge(
+					$DEFAULT_GLOB['GLOBAL'],
+					$config['GLOBAL']
+			);
+			if($cache){
+				file_put_contents(self::$CONFIG_FILE_NAME, '<?php return ' . var_export($config, true) . ';');
+			}
+		}
+		return $config;
+	}
 
 	public static function loadConfig($file,$file2=null){
 		ob_start ();
 		session_start ();
-		$DEFAULT_GLOB = parse_ini_file ("config/_project.properties", TRUE );
-		$GLOBALS ['CONFIG']= parse_ini_file ($file, TRUE );
-
-		if($file2!=null && file_exists($file2)){
-			$GLOBALS ['CONFIG'] = array_merge($GLOBALS ['CONFIG'],parse_ini_file ($file2, TRUE ));
-		}
-
-		$GLOBALS ['CONFIG']['GLOBAL'] = array_merge(
-				$DEFAULT_GLOB['GLOBAL'],
-				$GLOBALS ['CONFIG']['GLOBAL']
-		);
+		
+		$GLOBALS ['CONFIG'] = self::readConfig(defined("PRODUCTION") && constant("PRODUCTION")
+				,$file,$file2);
+		
 		set_include_path ($GLOBALS['CONFIG']['GLOBAL']['WORK_DIR']);
 		define("BASE_PATH", dirname(__FILE__) );
 
@@ -265,6 +283,7 @@ class RudraX {
 	}
 
 	public static function invoke($_conf=array()){
+		self::$mtime = microtime( true );
 		$conf = array_merge(array(
 				'controller' => 'web.php',
 				'DEFAULT_DB' => 'DB1'
@@ -297,6 +316,10 @@ class RudraX {
 		});
 		self::mapRequestInvoke();
 		$RDb->close();
+		self::$mtime = microtime( true )-self::$mtime;
+		header("EXECUTION_TIME:".self::$mtime);
+		self::$browser->log("EXECUTION_TIME",self::$mtime);
+		self::$browser->printlogs();
 	}
 
 }
