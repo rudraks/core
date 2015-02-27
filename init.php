@@ -318,8 +318,8 @@ class RudraX {
 		$RDb->close();
 		self::$mtime = microtime( true )-self::$mtime;
 		header("EXECUTION_TIME:".self::$mtime);
-		self::$browser->log("EXECUTION_TIME",self::$mtime);
-		self::$browser->printlogs();
+		//self::$browser->log("EXECUTION_TIME",self::$mtime);
+		//self::$browser->printlogs();
 	}
 
 }
