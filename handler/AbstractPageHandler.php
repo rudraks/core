@@ -29,7 +29,7 @@ abstract class AbstractPageHandler extends AbstractSmartyHandler {
 		if (! isset($view )) {
 			$view = $handlerName;
 		}
-		$header->minify();
+		//$header->minify();
 		$tpl->assign('METAS',$header->metas);
 		$tpl->assign('TITLE',$header->title);
 		$tpl->assign('CSS_FILES',$header->css);

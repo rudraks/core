@@ -6,87 +6,40 @@
 require_once "php_functions.php";
 require_once "Console.php";
 include_once ("model/AbstractRequest.php");
+include_once ("model/RxCache.php");
 global $RDb;
 class RudraX {
 
-	public static $CONFIG_FILE_NAME = '../build/rudrax_core_config.php';
 	public static $websitecache;
-	public static $webmodules;
 	public static $REQUEST_MAPPED = FALSE;
 	public static $browser;
 	private static $mtime;
+	private static $single_ton = array();
 
 	public static function init(){
-		include_once ("model/RxCache.php");
 		if(self::$browser==NULL)
 			self::$browser = new Browser();
 	}
-	public static function scanModules(){
-		self::$webmodules = self::WebCache()->get('modules');
-		if(DEBUG_BUILD || !self::$webmodules){
-			self::$webmodules = self::getModuleProperties(get_include_path().LIB_PATH,self::$webmodules);
-			self::$webmodules = self::getModuleProperties(get_include_path().RESOURCE_PATH,self::$webmodules);
-			self::WebCache()->set('modules',self::$webmodules);
-		}	else self::$webmodules =self::WebCache()->get('modules');
-	}
-	public static function getModules(){
-		if(self::$webmodules==null){
-			self::scanModules();
-		}
-		return self::$webmodules['mods'];
-	}
+
 	public static function WebCache(){
 		if(self::$websitecache ==NULL) self::$websitecache = new RxCache('rudrax');
 		return self::$websitecache;
 	}
 	
-	public static function readConfig($cache,$file,$file2=null){
-		$config = array();
-		if($cache && file_exists(self::$CONFIG_FILE_NAME)){
-			$config = include_once self::$CONFIG_FILE_NAME;
-		} else {
-			$DEFAULT_GLOB = parse_ini_file ("config/_project.properties", TRUE );
-			$config= parse_ini_file ($file, TRUE );
-			
-			if($file2!=null && file_exists($file2)){
-				$config = array_merge($config,parse_ini_file ($file2, TRUE ));
-			}
-			
-			$config['GLOBAL'] = array_merge(
-					$DEFAULT_GLOB['GLOBAL'],
-					$config['GLOBAL']
-			);
-			if($cache){
-				file_put_contents(self::$CONFIG_FILE_NAME, '<?php return ' . var_export($config, true) . ';');
-			}
+	public function getSingletonInstance ($path){
+		if(isset(self::$single_tong[$path])){
+			return self::$single_ton[$path];
 		}
-		return $config;
+		$_className = array_pop(explode("/", $path));
+		// Retrieve arguments list
+		$_args = func_get_args();
+		// Delete the first argument which is the class name
+		array_shift($_args);
+		$_reflection = new ReflectionClass($_className);
+		$_className[$_className] = $_reflection->newInstanceArgs($_args);
+		return $_className[$_className];
 	}
 
-	public static function loadConfig($file,$file2=null){
-		ob_start ();
-		session_start ();
-		
-		$GLOBALS ['CONFIG'] = self::readConfig(defined("PRODUCTION") && constant("PRODUCTION")
-				,$file,$file2);
-		
-		set_include_path ($GLOBALS['CONFIG']['GLOBAL']['WORK_DIR']);
-		define("BASE_PATH", dirname(__FILE__) );
-
-		foreach($GLOBALS ['CONFIG']['GLOBAL'] as $key=>$value){
-			define ( $key, $value);
-		}
-
-		define('Q',(isset($_REQUEST['q']) ? $_REQUEST['q'] : NULL));
-
-		$path_info = pathinfo($_SERVER['PHP_SELF']);
-		define ( 'CONTEXT_PATH', (
-		(Q==NULL) ?
-		strstr($_SERVER['PHP_SELF'],$path_info['basename'],TRUE)
-		: strstr($_SERVER['REQUEST_URI'],Q,true)
-		));
-		Console::set(TRUE);
-	}
 	public static function getTemplateController(){
 		self::includeUser();
 		include_once("controller/AbstractTemplateController.php");
@@ -209,26 +162,6 @@ class RudraX {
 		return call_user_func_array($callback, $argArray);
 	}
 
-	public static function resolvePath($str){
-		$array = explode( '/', $str);
-		$domain = array_shift( $array);
-		$parents = array();
-		foreach( $array as $dir) {
-			switch( $dir) {
-				case '.':
-					// Don't need to do anything here
-					break;
-				case '..':
-					array_pop( $parents);
-					break;
-				default:
-					$parents[] = $dir;
-					break;
-			}
-		}
-		return $domain . '/' . implode( '/', $parents);
-	}
-
 	public static function classInfo($path){
 		$info = explode("/",$path);
 		return array(
@@ -237,85 +170,40 @@ class RudraX {
 		);
 	}
 
-	public static function getModuleProperties($dir,$filemodules = array("_" => array(),"mods" => array())){
-
-		if (!is_dir($dir)){
-			return $filemodules;
-		}
-		$d = dir($dir);
-
-		while (false !== ($entry = $d->read())){
-			if ($entry != '.' && $entry != '..'){
-				if (is_dir($dir.'/'.$entry)){
-					$filemodules = self::getModuleProperties($dir.'/'.$entry,$filemodules);
-				} else if(strcmp ($entry,"module.properties")==0){
-					try{
-						$mod_file = $dir.'/'.$entry;
-						$mode_time = filemtime($mod_file);
-						if(!DEBUG_BUILD && isset($filemodules["_"][$mod_file]) 
-							&& $mode_time == $filemodules["_"][$mod_file]){
-							Browser::console("from-cache....".$mod_file);
-						} else {
-							if(DEBUG_BUILD) Browser::console("fresh ....",$mod_file);
-							$filemodules["_"][$mod_file] = $mode_time;
-							$r = parse_ini_file ($dir.'/'.$entry, TRUE );
-							//Browser::console($dir.'/'.$entry);
-							foreach($r as $mod=>$files){
-								$filemodules['mods'][$mod] = array("files"=>array());
-								foreach($files as $key=>$file){
-									if($key=='@'){
-										$filemodules['mods'][$mod][$key] = explode(',',$file);
-									} else if($key!='@' && !is_remote_file($file)){
-										$filemodules['mods'][$mod]["files"][] = $dir.'/'.$file;
-										//$filemodules['mods'][$mod][$key] = self::resolvePath($dir.'/'.$file);
-									} else $filemodules['mods'][$mod][$key] = $file;
-								}
-							}
-						}
-					} catch (Exception $e){
-						echo 'Caught exception: ',  $e->getMessage(), "\n";
-					}
-				}
-			}
-		}
-		$d->close();
-		return $filemodules;
-	}
-
 	public static function invoke($_conf=array()){
 		self::$mtime = microtime( true );
-		$conf = array_merge(array(
-				'controller' => 'web.php',
-				'DEFAULT_DB' => 'DB1'
+		$global_config = array_merge(array(
+				'CONTROLLER' => 'web.php',
+				'DEFAULT_DB' => 'DB1',
+				'CONSOLE_FUN' => 'console.log',
+				'RX_MODE_DEBUG' => FALSE,
+				'RX_JS_MERGE' => TRUE
 		),$_conf);
 		//Loads all the Constants
-		self::loadConfig("../app/config/project.properties","../local/project.properties");
+		ob_start ();
+		session_start ();
+		Config::load("../app/config/project.properties","../local/project.properties",$global_config);
 		//Initialze Rudrax
 		self::init();
 		global $RDb;
-		if(isset($conf["DEFAULT_DB"])){
-			$RDb = self::getDB($conf["DEFAULT_DB"]);
+		$config = Config::getValue("GLOBAL");
+		if(isset($config["DEFAULT_DB"])){
+			$RDb = self::getDB($config["DEFAULT_DB"]);
 		}
 		// Define Custom Request Plugs
-		require_once(APP_PATH."/controller/".$conf["controller"]);
+		require_once(APP_PATH."/controller/".$config["CONTROLLER"]);
 
-		// Default RudraX Plug
-		self::mapRequest("template/{temp}",function($temp="nohandler"){
-			return self::invokeHandler($temp);
-		});
-		self::mapRequest('data/{eventname}',function($eventName="dataHandler"){
-			$controller = self::getDataController();
-			$controller->invokeHandler($eventName);
-		});
-		self::mapRequest("resources.json",function($cb=""){
-			echo $cb."(".json_encode(self::getModules()).")"; 
-		});
-		// Default Plug for default page
-		self::mapRequest("",function(){
-			return self::invokeHandler("Index");
-		});
+		require_once("controller.php");
+		
 		self::mapRequestInvoke();
 		$RDb->close();
+		Config::save();
+		if(!RX_MODE_DEBUG){
+			setcookie('RX-ENCRYPT-PATH',"TRUE",0,"/");
+		} else {
+			//setcookie('RX-ENCRYPT-PATH',"FALSE",0,"/");
+			removecookie('RX-ENCRYPT-PATH');
+		}
 		self::$mtime = microtime( true )-self::$mtime;
 		header("EXECUTION_TIME:".self::$mtime);
 		//self::$browser->log("EXECUTION_TIME",self::$mtime);
@@ -329,10 +217,99 @@ class DBUtils {
 	}
 }
 class Config {
+	
+	public static $cache;
+	
+	private static $config;
 	public static function get($section,$prop=NULL){
 		if(isset($GLOBALS['CONFIG'][$section])){
 			return $GLOBALS['CONFIG'][$section];
 		} else return defined($section) ? constant($section) : FALSE;
+	}
+	
+	//CACHE MAINTAIN
+	public static function setValue($key,$value){
+		return self::$cache->set($key, $value);
+	}
+	
+	public static function getValue($key){
+		return self::$cache->get($key);
+	}
+	public static function hasValue($key){
+		return self::$cache->hasKey($key);
+	}
+	
+	public static function getSet($key,$callback=null){
+		if($callback==null){
+			return self::$config[$key];
+		} else if(isset(self::$config[$key])){
+			self::$config[$key] = call_user_func_array($callback);
+		}
+		return self::$config[$key];
+	}
+	public static function read($glob_config,$file,$file2=null){
+		$debug = isset($glob_config["RX_MODE_DEBUG"]) && ($glob_config["RX_MODE_DEBUG"] == TRUE);
+		
+		self::$cache = new RxCache("config_".$glob_config['CONTROLLER'],true);
+
+		$reloadCache = FALSE;
+		if(self::$cache->isEmpty()){
+			$reloadCache = TRUE;
+		} else {
+			$_glob_config = self::$cache->get("GLOBAL");
+			if($_glob_config["RX_MODE_DEBUG"] != $debug){
+				$reloadCache = TRUE;
+			}
+		}
+		
+		if($debug || $reloadCache){
+						$DEFAULT_CONFIG = parse_ini_file ("_project.properties", TRUE );
+			$localConfig = parse_ini_file ($file, TRUE );
+				
+			if($file2!=null && file_exists($file2)){
+				$localConfig  = array_merge($localConfig ,parse_ini_file ($file2, TRUE ));
+			}
+			self::$cache->merge($localConfig);
+			self::$cache->set('GLOBAL',array_merge(
+					$DEFAULT_CONFIG['GLOBAL'],
+					$localConfig['GLOBAL'],$glob_config
+			));
+			
+			self::$cache->save();
+		}
+		return self::$cache->getArray();;
+	}
+	
+	public static function load($file,$file2=null,$glob_config = array()){
+	
+		$GLOBALS ['CONFIG'] = self::read($glob_config,$file,$file2);
+	
+		set_include_path ($GLOBALS['CONFIG']['GLOBAL']['WORK_DIR']);
+		
+		define("BASE_PATH", dirname(__FILE__) );
+	
+		foreach($GLOBALS ['CONFIG']['GLOBAL'] as $key=>$value){
+			define ( $key, $value);
+		}
+	
+		define('Q',(isset($_REQUEST['q']) ? $_REQUEST['q'] : NULL));
+	
+		$path_info = pathinfo($_SERVER['PHP_SELF']);
+		$CONTEXT_PATH = (
+				(Q==NULL) ?
+				strstr($_SERVER['PHP_SELF'],$path_info['basename'],TRUE)
+				: strstr($_SERVER['REQUEST_URI'],Q,true)
+		);
+		
+		define ( 'CONTEXT_PATH', $CONTEXT_PATH);
+		define ('APP_CONTEXT',resolve_path(
+		$CONTEXT_PATH . (get_include_path())
+		));
+		Console::set(TRUE);
+	}
+	
+	public static function save(){
+		self::$cache->save(TRUE);
 	}
 }
 
@@ -344,17 +321,30 @@ class Browser {
 		self::$console = new Console();
 	}
 	public static function console($msgData){
-		if(DEBUG_BUILD) return self::$console->browser($msgData,debug_backtrace ());
+		if(RX_MODE_DEBUG) return self::$console->browser($msgData,debug_backtrace ());
 	}
 	public static function log(){
-		$args = func_get_args ();
-		$msgData = "\"";
-		foreach ($args as $key=>$val){
-			$msgData = $msgData.",".json_encode($val);
-		}
-		$msgData = $msgData.",\"";
-		return self::$console->browser($msgData,debug_backtrace ());
+		return self::logMessage(func_get_args (), debug_backtrace (), "console.log");	
 	}
+	public static function info(){
+		return self::logMessage(func_get_args (), debug_backtrace (), "console.info");	
+	}
+	public static function error(){
+		return self::logMessage(func_get_args (), debug_backtrace (), "console.error");	
+	}
+	public static function warn(){
+		return self::logMessage(func_get_args (), debug_backtrace (), "console.warn");
+	}
+	private static function logMessage($args,$trace,$logType){
+		$msgData = "";
+		$msgArray = array();
+		foreach ($args as $key=>$val){
+			//$msgData = $msgData.",".json_encode($val);
+			$msgArray[] = json_encode($val);
+		}
+		$msgData = implode(",", $msgArray);
+		return self::$console->browser($msgData,$trace,$logType);
+	} 
 	public static function printlogs(){
 		return self::$console->printlogs();
 	}

@@ -22,22 +22,59 @@ class Header {
 	public $scripts = array();
 	public $css = array();
 	public $dones = array();
-	public $modules =  array();
 	public $files_done =  array();
 	public $minified;
-	public static $REPLACE_REGEX;
+	
+	public static $cache;
+	public static $modules =  array();
+	public static $webmodules = null;
+	public static $modulefiles = null;
 	public static $BUILD_PATH;
+	
+	
+	public static function init(){
+		Browser::info("init");
+		self::$cache = new RxCache("header",true);
+		self::$webmodules = self::$cache->get('webmodules');
+		self::$modulefiles = self::$cache->get('modulefiles');
+	
+		if(self::$webmodules==null || (RX_MODE_DEBUG || self::$cache->isEmpty())){
+			Browser::warn("Scanning All Web Modules");
+			//READ MODULES
+			self::$webmodules = self::getModuleProperties(get_include_path().LIB_PATH,self::$webmodules);
+			self::$webmodules = self::getModuleProperties(get_include_path().RESOURCE_PATH,self::$webmodules);
+			
+			self::$cache->set('webmodules',self::$webmodules);
+			
+			//CREATE MODULE FILES
+			self::$modulefiles = array();
+			$header = new Header();
+			foreach(self::$webmodules['mods'] as $module=>$moduleObject){
+				$header->_import($module);
+			}
+			$header->minify();
+			self::$cache->set('modulefiles',self::$modulefiles);
+			self::$cache->save();
+			
+			Browser::info(self::$webmodules,self::$modulefiles);
+		}
+	}
+	public static function getModule($moduleName) {
+		return isset(self::$webmodules['mods'][$moduleName]) ? self::$webmodules['mods'][$moduleName] : FALSE;
+	}
+	public static function getModules() {
+		return isset(self::$webmodules['mods']) ? self::$webmodules['mods'] : FALSE;
+	}
 
 	public function  __construct(){
 		$this->minified = new Minifier( array(
 				'echo' => false,
-				'encode' => true,
+				'encode' => false,
 				//'timer' => true,
-				'gzip' => true,
+				'gzip' => false,
 				//'closure' => true
 		));
 		self::$BUILD_PATH = get_include_path(). BUILD_PATH.'/';
-		self::$REPLACE_REGEX = '/('.LIB_PATH.'|'.RESOURCE_PATH.')/';
 	}
 
 	public function title($title){
@@ -49,34 +86,31 @@ class Header {
 			$this->metas[$key] = $value;
 		}
 	}
-
+	
 	public function import(){
-		if($this->modules==null){
-			$this->modules = Rudrax::getModules();
-		}
+		//self::initModuleCache();
 		foreach(func_get_args() as $module){
 			$this->_import($module);
 		}
 	}
 
-	private function _import($module){
-		//Browser::console($module);
-		if(isset($this->modules[$module]) && !isset($this->dones[$module])){
+	private function _import($module)	{
+		if(self::getModule($module) && !isset($this->dones[$module])){
 			$this->dones[$module] = $module;
-			$this->add($module,$this->modules[$module]);
+			$this->add($module,self::getModule($module));
 		} else {
 			$moduleSplit = explode('/',$module);
 			$size = count($moduleSplit);
 			if($size>1){
 				$last = $moduleSplit[$size-1];
 				$super_module_list = array_splice($moduleSplit,$size-1,1);
-				$super_module = implode('/',$moduleSplit);
+				$super_module_name = implode('/',$moduleSplit);
 				//Browser::console($super_module);
-				if(isset($this->modules[$super_module])
-				&& isset($this->modules[$super_module][$last])
-				&& !isset($this->dones[$super_module])){
-					$this->addFile($super_module,$moduleSplit[$size-2],
-							$this->modules[$super_module][$last]);
+				$super_module = self::getModule($super_module_name);
+				if($super_module && isset($super_module[$last])
+				&& !isset($this->dones[$super_module_name])){
+					$this->addFile($super_module_name,$moduleSplit[$size-2],
+							self::getModule($super_module_name)[$last]);
 				}
 			}
 		}
@@ -85,17 +119,14 @@ class Header {
 	private function add($module,$list){
 
 		if(isset($list['@'])){
-			$modules = $list['@'];//explode(',',$list['@']);
+			$modules = $list['@'];
 			foreach($modules as $key=>$value){
 				$this->import($value);
 			}
 		}
 		$files = $list["files"];
-//		echo "<hr/>";
-//		echo print_r($files);
 		if($files!=null){
 			foreach($files as $key=>$value){
-	//			echo $module."::".$key."::".$value;
 				$this->addFile($module,$key,$value);
 			}
 		}
@@ -105,52 +136,128 @@ class Header {
 		//return $module.".".$key;
 		return $value;
 	}
-	public function addFile($module,$key,$value){
-		$ext = strtolower(pathinfo($value, PATHINFO_EXTENSION));
-		if(!is_remote_file($value)){
-			if($ext=='js'){
-				$this->scripts[$this->getKey($module,$key,$value)] = RESOURCE_PATH."/".$value;
-			} else if($ext=='css'){
-				$this->css[$this->getKey($module,$key,$value)] = RESOURCE_PATH."/".$value;
-			}
+	
+	public function getFileObj($filePath,$ext="js",$isRemote=false){
+		$file = ($isRemote == true) ? $filePath : $filePath; //(RESOURCE_PATH."/".$filePath);
+		$link = ($isRemote == true) ? $file : (CONTEXT_PATH.$file);
+		return array(
+			"remote" => $isRemote,
+			"file" => $file,
+			"script" => ($ext=='js'),
+			"ext" => $ext,
+			"link" => $link
+		);
+	}
+	
+	public function addFile($module,$file_name,$file_path){
+		$file_key = $this->getKey($module,$file_name,$file_path);
+		$fileObj = isset(self::$modulefiles[$file_key]) ? self::$modulefiles[$file_key] : NULL;
+		if($fileObj == NULL){
+			$ext = strtolower(pathinfo($file_path, PATHINFO_EXTENSION));
+			$isRemote = is_remote_file($file_path);
+			$fileObj = self::getFileObj($file_path,$ext,$isRemote);
+			self::$modulefiles[$file_key] = $fileObj;
+		}
+		
+		if($fileObj['script']){
+			$this->scripts[$file_key] = $fileObj;
 		} else {
-			if($ext=='js'){
-				$this->scripts[$this->getKey($module,$key,$value)] = $value;
-			} else if($ext=='css'){
-				$this->css[$this->getKey($module,$key,$value)] = $value;
-			} else {
-				$this->scripts[$this->getKey($module,$key,$value)] = $value;
-			}
+			$this->css[$file_key] = $fileObj;
 		}
 	}
 
 	public function minify(){
-		foreach($this->scripts as $key=>$value){
-			//$newName = self::$BUILD_PATH.RESOURCE_PATH.preg_replace(self::$REPLACE_REGEX,"",$this->scripts[$key],1);
-			if(!MINIFY_FILES){
-				$this->scripts[$key] = CONTEXT_PATH.$this->scripts[$key];
-			} else if(!is_remote_file($value) && file_exists(get_include_path().$this->scripts[$key])){
-				$newName = self::$BUILD_PATH.$this->scripts[$key];
-				//echo "[".$value."-->".$newName.":::".self::$BUILD_PATH."]<br>";
-				$this->scripts[$key] = CONTEXT_PATH.str_replace(self::$BUILD_PATH,"",
-						$this->minified->minify(get_include_path().$value,$newName)
-				);
-			} //else $this->scripts[$key] = CONTEXT_PATH.$this->scripts[$key];
-			//$files_done[$this->scripts[$key]] = 
-		}
-		foreach($this->css as $key=>$value){
-			//$newName = self::$BUILD_PATH.RESOURCE_PATH.preg_replace(self::$REPLACE_REGEX,"",$this->css[$key],1);
-			if(!MINIFY_FILES){
-				$this->css[$key] = CONTEXT_PATH.$this->css[$key];
-			} else if(!is_remote_file($value) && file_exists(get_include_path().$this->css[$key])){
-				$newName = self::$BUILD_PATH.$this->css[$key];
-				//echo $key."--".$value."--".$newName."<br>";
-				$this->css[$key] =  CONTEXT_PATH.str_replace(self::$BUILD_PATH,"",
-						$this->minified->minify(get_include_path().$this->css[$key],$newName)
-				);
+		if(RX_MODE_DEBUG || self::$cache->isEmpty()){
+			$oneScript = array();
+			foreach($this->scripts as $key=>$value){
+				if(RX_JS_MIN && !$this->scripts[$key]["remote"]){
+					Browser::warn("minifying...",$value["file"]);
+					$newName = self::$BUILD_PATH.$value["file"];
+					$this->scripts[$key]["exists"] = file_exists(get_include_path().$value["file"]);
+					$this->scripts[$key]["build_path"] = $newName;
+					$this->scripts[$key]["minified"] = $this->minified->minify(get_include_path().$value["file"],$newName);
+					$oneScript[] = $this->scripts[$key]["link"];
+					$this->scripts[$key]["link"] = CONTEXT_PATH.str_replace(self::$BUILD_PATH,"",
+							$this->scripts[$key]["minified"]
+					);
+				}
+			}
+			
+			foreach($this->css as $key=>$value){
+				if(RX_JS_MIN && !$this->css[$key]["remote"]){
+					Browser::warn("minifying...",$value["file"]);
+					$newName = self::$BUILD_PATH.$value["file"];
+					$this->css[$key]["exists"] = file_exists($value["file"]);
+					$this->css[$key]["build_path"] = $newName;
+					$this->css[$key]["minified"] = $this->minified->minify(get_include_path().$value["file"],$newName);
+					$this->css[$key]["link"] = CONTEXT_PATH.str_replace(self::$BUILD_PATH,"",
+							$this->css[$key]["minified"]
+					);
+				}
 			}
 		}
 	}
-
+	
+	public function printMinifiedJs ($files){
+		$newfiles = array();
+		foreach($files as $key=>$file){
+			$new_file = str_replace(CONTEXT_PATH, "", $file);
+			$newfiles[] = $filFile;
+			if(RX_JS_MIN){
+				$filFile = $this->minified->minify(get_include_path().$new_file,self::$BUILD_PATH.$new_file);
+				//print_js_comment("-----".get_include_path().$new_file."---".$file."---".$filFile);
+				readfile ($filFile);
+			} else {
+				readfile(get_include_path().$new_file);
+			}
+		}
+		return $newfiles;
+	}
+	
+	public static function getModuleProperties($dir,$filemodules = array("_" => array(),"mods" => array())){
+		if (!is_dir($dir)){
+			return $filemodules;
+		}
+		$d = dir($dir);
+		//Browser::warn("Scanning Resource Folder",$dir);
+		while (false !== ($entry = $d->read())){
+			if ($entry != '.' && $entry != '..'){
+				if (is_dir($dir.'/'.$entry)){
+					$filemodules = self::getModuleProperties($dir.'/'.$entry,$filemodules);
+				} else if(strcmp ($entry,"module.properties")==0){
+					try{
+						$mod_file = $dir.'/'.$entry;
+						$mode_time = filemtime($mod_file);
+						if(!RX_MODE_DEBUG && isset($filemodules["_"][$mod_file])
+						&& $mode_time == $filemodules["_"][$mod_file]){
+							//Browser::log("from-cache....",$mod_file);
+						} else {
+							//if(RX_MODE_DEBUG) Browser::log("fresh ....",$dir);
+							$filemodules["_"][$mod_file] = $mode_time;
+							$r = parse_ini_file ($dir.'/'.$entry, TRUE );
+							//Browser::console($dir.'/'.$entry);
+							foreach($r as $mod=>$files){
+								$filemodules['mods'][$mod] = array("files"=>array());
+								foreach($files as $key=>$file){
+									if($key=='@'){
+										$filemodules['mods'][$mod][$key] = explode(',',$file);
+									} else if($key!='@' && !is_remote_file($file)){
+										//Browser::log("****",resolve_path($dir."/".$file),"***");
+										$filemodules['mods'][$mod]["files"][] = replace_first(get_include_path(), "", $dir.'/'.$file);
+										//$filemodules['mods'][$mod]["files"][] = self::resolve_path("/resou/".$dir.'/'.$file);
+									} else $filemodules['mods'][$mod][$key] = $file;
+								}
+							}
+						}
+					} catch (Exception $e){
+						echo 'Caught exception: ',  $e->getMessage(), "\n";
+					}
+				}
+			}
+		}
+		$d->close();
+		return $filemodules;
+	}
 }
 
+Header::init();

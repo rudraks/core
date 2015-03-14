@@ -50,7 +50,7 @@ class AbstractPageController extends AbstractController {
 				if (! isset($view )) {
 					$view = $handlerName;
 				}
-				$header->minify();
+				//$header->minify();
 				$tpl->assign('user',$user);
 				$tpl->assign('page',$page);
 				$tpl->assign('CONTEXT_PATH',CONTEXT_PATH);
@@ -66,6 +66,7 @@ class AbstractPageController extends AbstractController {
 				$tpl->display(get_include_path().RUDRA."/core/view/full.tpl");
 				//$header->minified->logs();
 				if(BROWSER_LOGS){
+					Browser::info("header",$header->css,$header->scripts);
 					Browser::printlogs();
 				}
 				

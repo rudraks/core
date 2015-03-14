@@ -9,17 +9,15 @@
 <title>{$TITLE}</title>
 
 {foreach $CSS_FILES as $link}
-<link  name={$link@key} rel="stylesheet" type="text/css" href="{$link}"/>
+<link  name={$link@key} rel="stylesheet" type="text/css" href="{$link.link}"/>
 {/foreach} 
 
 <script type="text/javascript">
 var RESOURCE_PATH = '{$RESOURCE_PATH}';
-var CONTEXT_PATH = '{$CONTEXT_PATH}';
+var CONTEXT_PATH = '{$smarty.const.CONTEXT_PATH}';
+var RX_MODE_DEBUG = !!('{$smarty.const.RX_MODE_DEBUG}');
+var RX_JS_MERGE = !!('{$smarty.const.RX_JS_MERGE}');
 </script>
-{foreach $SCRIPT_FILES as $src}
-<script name={$src@key} src="{$src}" type="text/javascript"></script>
-{/foreach}
-
 </head>
 <body>
 
@@ -28,7 +26,15 @@ var CONTEXT_PATH = '{$CONTEXT_PATH}';
 <div id="templates" style="height:0px;"></div>
 <div id="page_json" data-value='{$page_json}'></div>
 <div id="script_logs"></div>
+
 </body>
 
+{if $smarty.const.RX_JS_MERGE}
+	<script name=one src="{$smarty.const.CONTEXT_PATH}combinejs/one.js?@={foreach $SCRIPT_FILES as $src}{$src.link},{/foreach}" type="text/javascript"></script>
+{else}
+   	{foreach $SCRIPT_FILES as $src}
+		<script name={$src@key} src="{$src.link}" type="text/javascript"></script>
+	{/foreach}
+{/if}
 
 </html>

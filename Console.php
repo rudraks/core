@@ -13,6 +13,7 @@ class Console {
 	private static $LOGS_PATH = false;
 	private $messages = array();
 	private $mtime;
+	public static $log_fun = "console.log";
 
 	public function  __construct(){
 		$this->mtime = microtime( true );
@@ -93,11 +94,11 @@ class Console {
 		self::_log ( $args, 'exception' );
 	}
 
-	public function browser($msgData,$trace=null){
+	public function browser($msgData,$trace=null,$logFun="console.log"){
 		if($trace==null){
 			$trace = debug_backtrace();
 		}
-		$this->messages[][$trace[0]["file"].'('.$trace[0]["line"].')'] = $msgData;
+		$this->messages[][$trace[0]["file"].'('.$trace[0]["line"].')'] = array( 'msg' => $msgData, 'fun' => $logFun);
 	}
 	/**
 	 * Output any return data to the javascript console/source of page
@@ -113,8 +114,12 @@ class Console {
 		if( !empty( $this->messages ) ){
 			echo '<script>';
 			foreach( $this->messages as $this->data ){
-				foreach( $this->data as $this->type => $this->output ){
-					echo 'console.log("'.$this->type .' : '. $this->output.'");' . PHP_EOL;
+				foreach( $this->data as $file =>  $msgObj){
+					if(is_string($msgObj)){
+						echo self::$log_fun.'("'.$file .' : ","'. $msgObj.'");' . PHP_EOL;
+					} else {
+						echo $msgObj['fun'].'("'.$file .' : ",'. $msgObj['msg'].');' . PHP_EOL;
+					}
 				}
 			}
 			echo '</script>';

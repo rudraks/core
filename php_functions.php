@@ -6,6 +6,48 @@ function is_remote_file($file_name) {
 	return is_remote($file_name) && preg_match("#\.[a-zA-Z0-9]{1,4}$#", $file_name) ? 1 : 0;
 }
 
+function replace_first($search,$replace="",$subject=""){
+	$pos = strpos($subject,$search);
+	if ($pos !== false) {
+		$newstring = substr_replace($subject,$replace,$pos,strlen($search));
+	}
+	return $newstring;
+}
+
+function print_js_comment($str){
+	echo "/*  ".$str." */";
+}
+
+function resolve_path($str){
+	$array = explode( '/', $str);
+	$domain = array_shift( $array);
+	$parents = array();
+	foreach( $array as $dir) {
+		switch( $dir) {
+			case '.':
+				// Don't need to do anything here
+				break;
+			case '..':
+				array_pop( $parents);
+				break;
+			default:
+				$parents[] = $dir;
+				break;
+		}
+	}
+	return $domain . '/' . implode( '/', $parents);
+}
+
+function removecookie ($key,$context="/"){
+	if (isset($_COOKIE[$key])) {
+		unset($_COOKIE[$key]);
+		setcookie($key, null, -1, $context);
+		return true;
+	} else {
+		return false;
+	}
+}
+
 //ERROR TRACE BACK FUNCTION
 function process_error_backtrace($errno, $errstr, $errfile, $errline, $errcontext) {
 	if(!(error_reporting() & $errno))
