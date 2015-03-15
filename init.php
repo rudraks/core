@@ -187,8 +187,10 @@ class RudraX {
 		self::init();
 		global $RDb;
 		$config = Config::getValue("GLOBAL");
+		$db_connect = false;
 		if(isset($config["DEFAULT_DB"])){
 			$RDb = self::getDB($config["DEFAULT_DB"]);
+			$db_connect = true;
 		}
 		// Define Custom Request Plugs
 		require_once(APP_PATH."/controller/".$config["CONTROLLER"]);
@@ -196,7 +198,9 @@ class RudraX {
 		require_once("controller.php");
 		
 		self::mapRequestInvoke();
-		$RDb->close();
+		if($db_connect){
+			$RDb->close();
+		}
 		Config::save();
 		if(!RX_MODE_DEBUG){
 			setcookie('RX-ENCRYPT-PATH',"TRUE",0,"/");
