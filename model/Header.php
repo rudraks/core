@@ -71,8 +71,8 @@ class Header {
 				'echo' => false,
 				'encode' => false,
 				//'timer' => true,
-				'gzip' => false,
-				//'closure' => true
+				//'closure' => true,
+				'gzip' => false
 		));
 		self::$BUILD_PATH = get_include_path(). BUILD_PATH.'/';
 	}
@@ -142,7 +142,7 @@ class Header {
 		$link = ($isRemote == true) ? $file : (CONTEXT_PATH.$file);
 		return array(
 			"remote" => $isRemote,
-			"file" => $file,
+			"file" => resolve_path($file),
 			"script" => ($ext=='js'),
 			"ext" => $ext,
 			"link" => $link
@@ -168,7 +168,6 @@ class Header {
 
 	public function minify(){
 		if(RX_MODE_DEBUG || self::$cache->isEmpty()){
-			$oneScript = array();
 			foreach($this->scripts as $key=>$value){
 				if(RX_JS_MIN && !$this->scripts[$key]["remote"]){
 					Browser::warn("minifying...",$value["file"]);
@@ -176,7 +175,6 @@ class Header {
 					$this->scripts[$key]["exists"] = file_exists(get_include_path().$value["file"]);
 					$this->scripts[$key]["build_path"] = $newName;
 					$this->scripts[$key]["minified"] = $this->minified->minify(get_include_path().$value["file"],$newName);
-					$oneScript[] = $this->scripts[$key]["link"];
 					$this->scripts[$key]["link"] = CONTEXT_PATH.str_replace(self::$BUILD_PATH,"",
 							$this->scripts[$key]["minified"]
 					);
@@ -185,7 +183,7 @@ class Header {
 			
 			foreach($this->css as $key=>$value){
 				if(RX_JS_MIN && !$this->css[$key]["remote"]){
-					Browser::warn("minifying...",$value["file"]);
+					Browser::warn("minifying...",$this->css[$key]["minified"],file_exists(get_include_path().$value["file"]),$value["file"]);
 					$newName = self::$BUILD_PATH.$value["file"];
 					$this->css[$key]["exists"] = file_exists($value["file"]);
 					$this->css[$key]["build_path"] = $newName;
