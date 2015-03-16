@@ -110,7 +110,7 @@ class Header {
 				if($super_module && isset($super_module[$last])
 				&& !isset($this->dones[$super_module_name])){
 					$this->addFile($super_module_name,$moduleSplit[$size-2],
-							self::getModule($super_module_name)[$last]);
+							$super_module[$last]);
 				}
 			}
 		}
