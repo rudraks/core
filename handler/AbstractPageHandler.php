@@ -32,11 +32,12 @@ abstract class AbstractPageHandler extends AbstractSmartyHandler {
 		//$header->minify();
 		$tpl->assign('METAS',$header->metas);
 		$tpl->assign('TITLE',$header->title);
-		$tpl->assign('CSS_FILES',$header->css);
-		$tpl->assign('SCRIPT_FILES',$header->scripts);
+		//$tpl->assign('CSS_FILES',$header->css);
+		//$tpl->assign('SCRIPT_FILES',$header->scripts);
 		$tpl->assign('BODY_FILES',$view . Config::get('TEMP_EXT'));
 		$tpl->assign('page_json',json_encode($page->data->data));
 
+		$tpl->assign('header',$header);
 		$tpl->assign('user',$user);
 		$tpl->assign('page',$page);
 		$tpl->assign('CONTEXT_PATH',CONTEXT_PATH);

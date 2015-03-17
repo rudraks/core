@@ -51,14 +51,15 @@ class AbstractPageController extends AbstractController {
 					$view = $handlerName;
 				}
 				//$header->minify();
+				
 				$tpl->assign('user',$user);
 				$tpl->assign('page',$page);
+				$tpl->assign('header',$header);
+				
 				$tpl->assign('CONTEXT_PATH',CONTEXT_PATH);
 				$tpl->assign('RESOURCE_PATH',Config::get('RESOURCE_PATH'));
 				$tpl->assign('METAS',$header->metas);
 				$tpl->assign('TITLE',$header->title);
-				$tpl->assign('CSS_FILES',$header->css);
-				$tpl->assign('SCRIPT_FILES',$header->scripts);
 				$tpl->assign('BODY_FILES',$view . Config::get('TEMP_EXT'));
 				$tpl->assign('page_json',json_encode($page->data->data));
 				//echo get_include_path();

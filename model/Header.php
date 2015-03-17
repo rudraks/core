@@ -20,10 +20,12 @@ class Header {
 	public $title;
 	public $metas = array();
 	public $scripts = array();
+	public $scripts_bundle = array();
 	public $css = array();
 	public $dones = array();
 	public $files_done =  array();
 	public $minified;
+	public $const = array("HAS");
 	
 	public static $cache;
 	public static $modules =  array();
@@ -75,6 +77,7 @@ class Header {
 				'gzip' => false
 		));
 		self::$BUILD_PATH = get_include_path(). BUILD_PATH.'/';
+		$this->const = Config::getSection("CLIENT_CONST");
 	}
 
 	public function title($title){
@@ -88,10 +91,10 @@ class Header {
 	}
 	
 	public function import(){
-		//self::initModuleCache();
 		foreach(func_get_args() as $module){
 			$this->_import($module);
 		}
+		$this->combine();
 	}
 
 	private function _import($module)	{
@@ -105,7 +108,6 @@ class Header {
 				$last = $moduleSplit[$size-1];
 				$super_module_list = array_splice($moduleSplit,$size-1,1);
 				$super_module_name = implode('/',$moduleSplit);
-				//Browser::console($super_module);
 				$super_module = self::getModule($super_module_name);
 				if($super_module && isset($super_module[$last])
 				&& !isset($this->dones[$super_module_name])){
@@ -121,7 +123,7 @@ class Header {
 		if(isset($list['@'])){
 			$modules = $list['@'];
 			foreach($modules as $key=>$value){
-				$this->import($value);
+				$this->_import($value);
 			}
 		}
 		$files = $list["files"];
@@ -165,7 +167,31 @@ class Header {
 			$this->css[$file_key] = $fileObj;
 		}
 	}
-
+	
+	public function combine(){
+		$count = count($this->scripts);
+		$this->scripts_bundle = array();
+		for($i=0;$i<$count;$i+=5){
+			$slice = (array_slice($this->scripts,$i,5));
+			$param = "";
+			foreach ($slice as $fileObj){
+				if($fileObj["remote"]){
+					$this->makeMD5Entry($param);
+					$param = "";
+					$this->scripts_bundle[$fileObj['link']] = $fileObj['link'];
+				} else {
+					$param= $param.$fileObj['link'].",";
+				}
+			}
+			$this->makeMD5Entry($param);
+		}
+	}
+	
+	public function makeMD5Entry($param){
+		$fileName = md5($param).".js";
+		$this->scripts_bundle[$fileName] = CONTEXT_PATH."combinejs/".$fileName."?@=".$param;
+	}
+	
 	public function minify(){
 		if(RX_MODE_DEBUG || self::$cache->isEmpty()){
 			foreach($this->scripts as $key=>$value){
@@ -243,7 +269,7 @@ class Header {
 										//Browser::log("****",resolve_path($dir."/".$file),"***");
 										$filemodules['mods'][$mod]["files"][] = replace_first(get_include_path(), "", $dir.'/'.$file);
 										//$filemodules['mods'][$mod]["files"][] = self::resolve_path("/resou/".$dir.'/'.$file);
-									} else $filemodules['mods'][$mod][$key] = $file;
+									} else $filemodules['mods'][$mod]["files"][] = $file;
 								}
 							}
 						}

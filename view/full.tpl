@@ -8,13 +8,14 @@
 
 <title>{$TITLE}</title>
 
-{foreach $CSS_FILES as $link}
+{foreach $header->css as $link}
 <link  name={$link@key} rel="stylesheet" type="text/css" href="{$link.link}"/>
 {/foreach} 
 
 <script type="text/javascript">
 var RESOURCE_PATH = '{$RESOURCE_PATH}';
 var CONTEXT_PATH = '{$smarty.const.CONTEXT_PATH}';
+{foreach $header->const as $const}var {$const@key} = '{$const}';{/foreach}
 var RX_MODE_DEBUG = !!('{$smarty.const.RX_MODE_DEBUG}');
 var RX_JS_MERGE = !!('{$smarty.const.RX_JS_MERGE}');
 </script>
@@ -29,10 +30,12 @@ var RX_JS_MERGE = !!('{$smarty.const.RX_JS_MERGE}');
 
 </body>
 
-{if $smarty.const.RX_JS_MERGE}
-	<script name=one src="{$smarty.const.CONTEXT_PATH}combinejs/one.js?@={foreach $SCRIPT_FILES as $src}{$src.link},{/foreach}" type="text/javascript"></script>
+{if $header->const.RX_JS_MERGE}
+   	{foreach $header->scripts_bundle as $file}
+		<script name="{$file@key}"src="{$file}" type="text/javascript"></script>
+   	{/foreach}
 {else}
-   	{foreach $SCRIPT_FILES as $src}
+   	{foreach $header->scripts as $src}
 		<script name={$src@key} src="{$src.link}" type="text/javascript"></script>
 	{/foreach}
 {/if}

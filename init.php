@@ -186,7 +186,7 @@ class RudraX {
 		//Initialze Rudrax
 		self::init();
 		global $RDb;
-		$config = Config::getValue("GLOBAL");
+		$config = Config::getSection("GLOBAL");
 		$db_connect = false;
 		if(isset($config["DEFAULT_DB"])){
 			$RDb = self::getDB($config["DEFAULT_DB"]);
@@ -236,21 +236,13 @@ class Config {
 		return self::$cache->set($key, $value);
 	}
 	
-	public static function getValue($key){
+	public static function getSection($key){
 		return self::$cache->get($key);
 	}
 	public static function hasValue($key){
 		return self::$cache->hasKey($key);
 	}
 	
-	public static function getSet($key,$callback=null){
-		if($callback==null){
-			return self::$config[$key];
-		} else if(isset(self::$config[$key])){
-			self::$config[$key] = call_user_func_array($callback);
-		}
-		return self::$config[$key];
-	}
 	public static function read($glob_config,$file,$file2=null){
 		$debug = isset($glob_config["RX_MODE_DEBUG"]) && ($glob_config["RX_MODE_DEBUG"] == TRUE);
 		
@@ -267,11 +259,13 @@ class Config {
 		}
 		
 		if($debug || $reloadCache){
-						$DEFAULT_CONFIG = parse_ini_file ("_project.properties", TRUE );
+			
+			$DEFAULT_CONFIG = parse_ini_file ("_project.properties", TRUE );
 			$localConfig = parse_ini_file ($file, TRUE );
+			$localConfig = array_replace_recursive($DEFAULT_CONFIG,$localConfig);
 				
 			if($file2!=null && file_exists($file2)){
-				$localConfig  = array_merge($localConfig ,parse_ini_file ($file2, TRUE ));
+				$localConfig  = array_replace_recursive($localConfig ,parse_ini_file ($file2, TRUE ));
 			}
 			self::$cache->merge($localConfig);
 			self::$cache->set('GLOBAL',array_merge(
@@ -292,6 +286,7 @@ class Config {
 		
 		define("BASE_PATH", dirname(__FILE__) );
 	
+		//print_r($GLOBALS ['CONFIG']['GLOBAL']);
 		foreach($GLOBALS ['CONFIG']['GLOBAL'] as $key=>$value){
 			define ( $key, $value);
 		}
