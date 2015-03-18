@@ -2,6 +2,12 @@
 
 
 // Default RudraX Plug
+RudraX::mapRequest("combinejs/{mdfile}",function(){
+	include_once (RUDRA . "/core/handler/ResourceHandler.php");
+	$handler = new ResourceHandler();
+	$handler->invokeHandler();
+});
+
 RudraX::mapRequest("template/{temp}",function($temp="nohandler"){
 	return RudraX::invokeHandler($temp);
 });
@@ -15,12 +21,6 @@ RudraX::mapRequest("resources.json",function($cb=""){
 	echo $cb."(".json_encode(Header::getModules()).")";
 });
 
-
-RudraX::mapRequest("combinejs/{mdfile}",function(){
-	include_once (RUDRA . "/core/handler/ResourceHandler.php");
-	$handler = new ResourceHandler();
-	$handler->invokeHandler();
-});
 
 // Default Plug for default page
 RudraX::mapRequest("",function(){

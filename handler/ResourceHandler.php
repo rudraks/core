@@ -7,17 +7,16 @@ include_once (RUDRA_MODEL . "/Header.php");
 class ResourceHandler extends AbstractHandler {
 	public function invokeHandler(){
 
-		$files = explode(",",$_GET['@']);
 		$hdr = new Header();
 		
 		$cache_ext  = '.js'; //file extension
 		$cache_time     = 3600;  //Cache file expires afere these seconds (1 hour = 3600 sec)
 		$cache_folder   = Header::$BUILD_PATH; //folder to store Cache files
-		$ignore_pages   = array('', '');
+		//$ignore_pages   = array('', '');
 		
 		$dynamic_url    = $_SERVER['QUERY_STRING']; // requested dynamic page (full url)
 		$cache_file     = $cache_folder.md5($dynamic_url).$cache_ext; // construct a cache file
-		$ignore = (in_array($dynamic_url,$ignore_pages))?true:false; //check if url is in ignore list
+		$ignore = false; //(in_array($dynamic_url,$ignore_pages))?true:false; //check if url is in ignore list
 		
 		if(!RX_MODE_DEBUG){
 			//if (!$ignore && file_exists($cache_file) && time() - $cache_time < filemtime($cache_file)) { //check Cache exist and it's not expired.
@@ -34,6 +33,7 @@ class ResourceHandler extends AbstractHandler {
 		//Turn on output buffering with gzip compression.
 		ob_start('ob_gzhandler');
 		
+		$files = explode(",",$_GET['@']);
 		$newFiles = $hdr->printMinifiedJs($files);
 		
 		if (!is_dir($cache_folder)) { //create a new folder if we need to

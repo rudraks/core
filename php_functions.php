@@ -48,6 +48,7 @@ function removecookie ($key,$context="/"){
 	}
 }
 
+
 //ERROR TRACE BACK FUNCTION
 function process_error_backtrace($errno, $errstr, $errfile, $errline, $errcontext) {
 	if(!(error_reporting() & $errno))
