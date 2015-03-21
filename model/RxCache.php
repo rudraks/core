@@ -44,14 +44,19 @@ class RxCache {
 			$this->dirty = true;
 		}
 	}
-	public function get($key){
+	public function get($key,$default=false){
 		if(!$this->hard){
-			return ($this::$cache ) ? $this::$cache ->get($this->prefix.$key) : false;
+			return ($this::$cache ) ? $this::$cache ->get($this->prefix.$key) : $default;
 			//return Cache::get($this->prefix.$key) ;
 			return apc_fetch ($this->prefix.$key);
 			//return ($this->cache) ? $this->cache->get($key) : false;
 		} else {
-			return $this->hasKey($key) ? $this->cache_array[$key] : NULL;
+			if( $this->hasKey($key)){
+				return $this->cache_array[$key];
+			} else {
+				$this->set($key, $default);
+				return $default;
+			}
 		}
 	}
 	
