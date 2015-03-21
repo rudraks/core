@@ -51,21 +51,23 @@ class Header {
 			//CREATE MODULE FILES
 			self::$modulefiles = array();
 			$header = new Header();
-			foreach(self::$webmodules['mods'] as $module=>$moduleObject){
+			foreach(self::$webmodules['bundles'] as $module=>$moduleObject){
 				$header->_import($module);
 			}
 			$header->minify();
 			self::$cache->set('modulefiles',self::$modulefiles);
 			self::$cache->save();
 			
+			Rudrax::writeBuildFile("resources/bundle.json", json_encode(Header::getModules()));
+			
 			Browser::info(self::$webmodules,self::$modulefiles);
 		}
 	}
 	public static function getModule($moduleName) {
-		return isset(self::$webmodules['mods'][$moduleName]) ? self::$webmodules['mods'][$moduleName] : FALSE;
+		return isset(self::$webmodules['bundles'][$moduleName]) ? self::$webmodules['bundles'][$moduleName] : FALSE;
 	}
 	public static function getModules() {
-		return isset(self::$webmodules['mods']) ? self::$webmodules['mods'] : FALSE;
+		return isset(self::$webmodules) ? self::$webmodules : FALSE;
 	}
 
 	public function  __construct(){
@@ -238,7 +240,7 @@ class Header {
 		return $newfiles;
 	}
 	
-	public static function getModuleProperties($dir,$filemodules = array("_" => array(),"mods" => array())){
+	public static function getModuleProperties($dir,$filemodules = array("_" => array(),"bundles" => array())){
 		if (!is_dir($dir)){
 			return $filemodules;
 		}
@@ -261,15 +263,15 @@ class Header {
 							$r = parse_ini_file ($dir.'/'.$entry, TRUE );
 							//Browser::console($dir.'/'.$entry);
 							foreach($r as $mod=>$files){
-								$filemodules['mods'][$mod] = array("files"=>array());
+								$filemodules['bundles'][$mod] = array("files"=>array());
 								foreach($files as $key=>$file){
 									if($key=='@'){
-										$filemodules['mods'][$mod][$key] = explode(',',$file);
+										$filemodules['bundles'][$mod][$key] = explode(',',$file);
 									} else if($key!='@' && !is_remote_file($file)){
 										//Browser::log("****",resolve_path($dir."/".$file),"***");
-										$filemodules['mods'][$mod]["files"][] = replace_first(get_include_path(), "", $dir.'/'.$file);
-										//$filemodules['mods'][$mod]["files"][] = self::resolve_path("/resou/".$dir.'/'.$file);
-									} else $filemodules['mods'][$mod]["files"][] = $file;
+										$filemodules['bundles'][$mod]["files"][] = replace_first(get_include_path(), "", $dir.'/'.$file);
+										//$filemodules['bundles'][$mod]["files"][] = self::resolve_path("/resou/".$dir.'/'.$file);
+									} else $filemodules['bundles'][$mod]["files"][] = $file;
 								}
 							}
 						}

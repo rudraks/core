@@ -135,20 +135,33 @@ class RudraX {
 	public static $url_callback = null;
 	public static $url_size = 0;
 	public static $url_varmap = null;
+	public static $url_cache = null;
 
 	public static function mapRequestInvoke (){
 		return self::_mapRequest(self::$url_varmap,self::$url_callback);
 	}
 	public static function mapRequest ($mapping,$callback){
 		if(self::$REQUEST_MAPPED) return;
-		$mapper = preg_replace('/\{(.*?)\}/m','(?P<$1>[\w\.]*)', str_replace('/','#',$mapping));
-		$mapperArray = explode("#",$mapper);
-		$mapperSize = (empty($mapping) ? 0 : count($mapperArray))+1;
-		if(self::$url_size < $mapperSize){
+		
+		$mapObj  = self::$url_cache->get($mapping);
+		
+		if($mapObj == null || RX_MODE_DEBUG){
+			$mapper = preg_replace('/\{(.*?)\}/m','(?P<$1>[\w\.]*)', str_replace('/','#',$mapping));
+			$mapperArray = explode("#",$mapper);
+			$mapperSize = (empty($mapping) ? 0 : count($mapperArray))+1;
+			$mapObj = array(
+					"mapper"=>$mapper,
+					"mapperArray"=>$mapperArray,
+					"mapperSize"=>$mapperSize
+			);
+			self::$url_cache->set($mapping, $mapObj);
+		}
+		
+		if(self::$url_size < $mapObj["mapperSize"]){
 			$varmap = array();
-			preg_match("/".$mapper."/",str_replace( "/","#",Q),$varmap);
+			preg_match("/".$mapObj["mapper"]."/",str_replace( "/","#",Q),$varmap);
 			if(count($varmap)>0){
-				self::$url_size = $mapperSize;
+				self::$url_size = $mapObj["mapperSize"];
 				self::$url_callback = $callback;
 				self::$url_varmap = $varmap;
 			}
@@ -165,13 +178,12 @@ class RudraX {
 	public static function classInfo($path){
 		$info = explode("/",$path);
 		return array(
-				"class_name" =>	end($info),
-				"file_path" => $path
+			"class_name" =>	end($info),
+			"file_path" => $path
 		);
 	}
 
 	public static function invoke($_conf=array()){
-		self::$mtime = microtime( true );
 		$global_config = array_merge(array(
 				'CONTROLLER' => 'web.php',
 				'DEFAULT_DB' => 'DB1',
@@ -193,9 +205,11 @@ class RudraX {
 			$db_connect = true;
 		}
 		// Define Custom Request Plugs
+		self::$url_cache = new RxCache("url_".$config['CONTROLLER'],true);
 		require_once(APP_PATH."/controller/".$config["CONTROLLER"]);
 
 		require_once("controller.php");
+		self::$url_cache->save(true);
 		
 		self::mapRequestInvoke();
 		if($db_connect){
@@ -205,13 +219,12 @@ class RudraX {
 		if(!RX_MODE_DEBUG){
 			setcookie('RX-ENCRYPT-PATH',"TRUE",0,"/");
 		} else {
-			//setcookie('RX-ENCRYPT-PATH',"FALSE",0,"/");
 			removecookie('RX-ENCRYPT-PATH');
 		}
-		self::$mtime = microtime( true )-self::$mtime;
-		header("EXECUTION_TIME:".self::$mtime);
-		//self::$browser->log("EXECUTION_TIME",self::$mtime);
-		//self::$browser->printlogs();
+	}
+	
+	public static function writeBuildFile($file,$content){
+		return file_put_contents("../build/".$file, $content);
 	}
 
 }
@@ -224,7 +237,6 @@ class Config {
 	
 	public static $cache;
 	
-	private static $config;
 	public static function get($section,$prop=NULL){
 		if(isset($GLOBALS['CONFIG'][$section])){
 			return $GLOBALS['CONFIG'][$section];
@@ -323,7 +335,9 @@ class Browser {
 		if(RX_MODE_DEBUG) return self::$console->browser($msgData,debug_backtrace ());
 	}
 	public static function log(){
-		return self::logMessage(func_get_args (), debug_backtrace (), "console.log");	
+		if(RX_MODE_DEBUG){
+			return self::logMessage(func_get_args (), debug_backtrace (), "console.log");	
+		}
 	}
 	public static function info(){
 		return self::logMessage(func_get_args (), debug_backtrace (), "console.info");	

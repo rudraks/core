@@ -18,7 +18,7 @@ RudraX::mapRequest('data/{eventname}',function($eventName="dataHandler"){
 
 RudraX::mapRequest("resources.json",function($cb=""){
 	require_once(RUDRA.'/core/model/Header.php' );
-	echo $cb."(".json_encode(Header::getModules()).")";
+	echo $cb."((".json_encode(Header::getModules()).").bundles)";
 });
 
 

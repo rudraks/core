@@ -44,6 +44,7 @@ class ResourceHandler extends AbstractHandler {
 			fwrite($fp, ob_get_contents()); //write contents of the output buffer in Cache file
 			fclose($fp); //Close file pointer
 		}
+		$this->writeHeaders($cache_file);
 		ob_end_flush();
 	}
 	
@@ -96,6 +97,7 @@ class ResourceHandler extends AbstractHandler {
 	}
 	
 	public function writeHeaders($fileName, $fileType='application/javascript; charset: UTF-8'){
+		//echo "//echo::".$fileType;
 		$fileModTime = filemtime($fileName);
 		header('Last-Modified: '.gmdate('D, d M Y H:i:s', $fileModTime).' GMT', true, 200);
 		header('Content-type: '.$fileType);
