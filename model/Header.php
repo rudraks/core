@@ -58,7 +58,7 @@ class Header {
 			self::$cache->set('modulefiles',self::$modulefiles);
 			self::$cache->save();
 			
-			Rudrax::writeBuildFile("resources/bundle.json", json_encode(Header::getModules()));
+			FileUtil::write("resources/bundle.json", json_encode(Header::getModules()));
 			
 			Browser::info(self::$webmodules,self::$modulefiles);
 		}

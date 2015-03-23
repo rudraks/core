@@ -4,56 +4,56 @@
  * To change this license header, choose License Headers in Project Properties. To change this template file, choose Tools | Templates and open the template in the editor.
 */
 
-include_once (RUDRA . "/core/model/AbstractUser.php");
-
 abstract class AbstractController {
 
 	public $user;
-
-	public function  __construct(){
-		$this->user = new User();
+	
+	public function loadSession(){
+		$UserClass = ClassUtil::getSessionUserClass();
+		$this->user = new $UserClass;
 	}
 
-	public function getHandlerName() {
-		return $_GET[PAGE_PARAM];
+	public function setUser(AbstractUser $user){
+		$this->user = $user;
 	}
 
-	public function preRequest(User $user, $handlerName) {
-		return true;
+	public function getUser(){
+		return $this->user;
 	}
 
-	public function postRequest(User $user, $handlerName) {
-		return true;
-	}
-
-	public function invokeHandler($handlerName) {
-		if ($this->preRequest($this->user, $handlerName )) {
-			$this->invoke($this->user, $handlerName );
-			$this->postRequest($this->user, $handlerName );
-		}
-		$this->user->save();
-	}
-	abstract public function invoke(User $user, $handlerName);
-	protected static function setSmartyPaths(Smarty $viewModel){
-		$viewModel->setTemplateDir(get_include_path() .Config::get('VIEW_PATH'));
-		$viewModel->setConfigDir(get_include_path() . Config::get('CONFIG_PATH'));
-		$CACHE_PATH = get_include_path() . Config::get('BUILD_PATH').'/cache';
-		if (!file_exists($CACHE_PATH)) {
-			if(!mkdir($CACHE_PATH, 0777, true)){
-				die('Failed to create folders:'.$CACHE_PATH);
-			};
-		}
-		$viewModel->setCacheDir($CACHE_PATH);
-		$TEMP_PATH = get_include_path() . Config::get('BUILD_PATH').'/temp';
-		if (!file_exists($TEMP_PATH)) {
-			if(!mkdir($TEMP_PATH, 0777, true)){
-				die('Failed to create folders:'.$TEMP_PATH);
-			};
-		}
-		$viewModel->setCompileDir($TEMP_PATH);
-		$LOCAL_PLUGIN_PATH = get_include_path() . Config::get('LOCAL_PLUGIN_PATH');
-		if (file_exists($LOCAL_PLUGIN_PATH)) {
-			$viewModel->addPluginsDir($LOCAL_PLUGIN_PATH);
+	public function _interceptor_($info,$controllerOutput) {
+		switch ($info["type"]) {
+			case "page":
+				$this->_pageInterceptor_($info,$controllerOutput);
+				break;
+			case "template":
+				$this->_templateInterceptor_($info,$controllerOutput);
+				break;
+			case "json":
+				$this->_jsonInterceptor_($info,$controllerOutput);
+				break;
+			case "data":
+				$this->_dataInterceptor_($info,$controllerOutput);
+				break;
+			default:
+				break;
 		}
 	}
+
+	public function _pageInterceptor_($info,$controllerOutput){
+		return call_user_func(rx_function("rx_interceptor_page"),$this->user, $controllerOutput);
+	}
+	
+	public function _templateInterceptor_($info,$controllerOutput){
+		return call_user_func(rx_function("rx_interceptor_template"),$this->user, $controllerOutput);
+	}
+	
+	public function _jsonInterceptor_($info,$controllerOutput){
+		return call_user_func(rx_function("rx_interceptor_json"),$this->user, $controllerOutput);
+	}
+	
+	public function _dataInterceptor_($info,$controllerOutput){
+		return call_user_func(rx_function("rx_interceptor_data"),$this->user, $controllerOutput);
+	}
+
 }

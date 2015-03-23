@@ -13,11 +13,9 @@
 {/foreach} 
 
 <script type="text/javascript">
-var RESOURCE_PATH = '{$RESOURCE_PATH}';
 var CONTEXT_PATH = '{$smarty.const.CONTEXT_PATH}';
-{foreach $header->const as $const}var {$const@key} = '{$const}';{/foreach}
 var RX_MODE_DEBUG = !!('{$smarty.const.RX_MODE_DEBUG}');
-var RX_JS_MERGE = !!('{$smarty.const.RX_JS_MERGE}');
+{foreach $header->const as $const}var {$const@key} = '{$const}';{/foreach}
 </script>
 </head>
 <body>

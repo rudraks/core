@@ -2,14 +2,14 @@
 /*
  * @category Lib @package Test Suit @copyright 2011, 2012 Dmitry Sheiko (http://dsheiko.com) @license GNU
 */
-include_once (RUDRA . "/core/controller/AbstractController.php");
+include_once (RUDRA . "/core/controller/AbstractRxController.php");
 
 /**
  *
  * @author Lalit Tanwar
  *
 */
-abstract class AbstractNotificationController extends AbstractController {
+abstract class AbstractNotificationController extends AbstractRxController {
 
 	/**
 	 * DB for for current request

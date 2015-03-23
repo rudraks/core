@@ -9,26 +9,29 @@ class RxCache {
 	public $prefix;
 	public $hard;
 	public $hard_file;
-	public $cache_array;
+	public static $cache_array = array();
 	public $dirty = false;
+	public $name = "GLOBAL";
 
 	public function  __construct($prefix="GLOBAL",$hard=FALSE,$hard_array = array()){
 		$this->hard = $hard;
+		$this->name = $prefix;
 		if(!$this->hard){
 			$this->prefix = $prefix."::";
 			// 		if($this->cache==NULL){
 			// 			$this->cache = new Memcache;
 			// 		}
-			include(RUDRA ."/phpfastcache/phpfastcache.php");
+			include_once(RUDRA ."/phpfastcache/phpfastcache.php");
 			$this::$cache = new phpFastCache();
 		} else {
 			$this->hard_file = '../build/rx_cache_'.$prefix.'.php';
 			if($this->exists()){
-				$this->cache_array = include_once $this->hard_file;
-				$this->dirty = true;
+				if(!isset(self::$cache_array[$this->name])){
+					self::$cache_array[$this->name] = include $this->hard_file;
+				}
 			} else {
-				$this->cache_array = $hard_array;
-				$this->dirty = false;
+				self::$cache_array[$this->name] = $hard_array;
+				$this->dirty = true;
 			}
 		}
 	}
@@ -40,7 +43,7 @@ class RxCache {
 			return apc_store ($this->prefix.$key , $object,$timeout);
 			//return ($this->cache) ? $this->cache->set($key,$object,MEMCACHE_COMPRESSED,$timeout) : false;
 		} else {
-			$this->cache_array[$key] = $object;
+			self::$cache_array[$this->name][$key] = $object;
 			$this->dirty = true;
 		}
 	}
@@ -52,7 +55,7 @@ class RxCache {
 			//return ($this->cache) ? $this->cache->get($key) : false;
 		} else {
 			if( $this->hasKey($key)){
-				return $this->cache_array[$key];
+				return self::$cache_array[$this->name][$key];
 			} else {
 				$this->set($key, $default);
 				return $default;
@@ -61,21 +64,23 @@ class RxCache {
 	}
 	
 	public function hasKey($key){
-		return isset($this->cache_array[$key]);
+		return isset(self::$cache_array[$this->name][$key]);
 	}
 	
 	public function save($check=false){
+		header("X-C-".$this->name.": FALSE");
 		if(!$check || $this->dirty){
-			file_put_contents($this->hard_file, '<?php return ' . var_export($this->cache_array, true) . ';');
+			header("X-C-".$this->name.": TRUE");
+			file_put_contents($this->hard_file, '<?php return ' . var_export(self::$cache_array[$this->name], true) . ';');
 		}
 	}
 	
 	public function merge($cache_array){
-		$this->cache_array = array_merge($this->cache_array,$cache_array);
+		self::$cache_array[$this->name] = array_merge(self::$cache_array[$this->name],$cache_array);
 	}
 	
 	public function getArray(){
-		return $this->cache_array;
+		return self::$cache_array[$this->name];
 	}
 	
 	public function exists(){

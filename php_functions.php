@@ -48,6 +48,10 @@ function removecookie ($key,$context="/"){
 	}
 }
 
+function rx_function($callback){
+	include_once 'functions/'.$callback.".php";
+	return $callback;
+}
 
 //ERROR TRACE BACK FUNCTION
 function process_error_backtrace($errno, $errstr, $errfile, $errline, $errcontext) {

@@ -11,7 +11,7 @@
  *
  * @author Lalit Tanwar
  */
-class AbstractUser {
+abstract class AbstractUser {
 
 	public static $usercache;
 	public $valid;
@@ -58,7 +58,7 @@ class AbstractUser {
 		session_regenerate_id();
 		$_SESSION['uid'] = $this->uid;
 		$_SESSION['uname'] = $this->uname;
-		$this->info['uid'] = $this->uid; 
+		$this->info['uid'] = $this->uid;
 		$this->info['uname'] = $this->uname;
 		$this->save();
 		session_write_close();
@@ -70,14 +70,10 @@ class AbstractUser {
 		session_destroy();
 	}
 
-	public function auth($username, $passowrd) {
-		if (strcmp($username, "admin") == 0) {
-			setValid();
-		}
-	}
-	public function unauth() {
-		$this->setInValid();
-	}
+	public abstract function auth($username, $passowrd);
+	
+	public abstract function unauth();
+	
 	public function isValid() {
 		return $this->valid;
 	}
@@ -87,4 +83,18 @@ class AbstractUser {
 		Browser::log(self::$usercache->get($this->uid));
 	}
 
+}
+
+class DefaultUser extends AbstractUser {
+
+	public function auth($username, $passowrd) {
+		if (strcmp($username, "admin") == 0) {
+			$this->setValid();
+		}
+	}
+
+	public function unauth() {
+		//DO SOME THING
+		$this->setInValid();
+	}
 }
