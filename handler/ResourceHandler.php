@@ -9,6 +9,13 @@ class ResourceHandler extends AbstractHandler {
 
 		$hdr = new Header();
 		
+		//echo "CONT=".CONTEXT_PATH."\n";
+// 		echo "Q=".Q."\n";
+// 		echo "GET_Q=".$_GET["q"]."\n";
+// 		echo "REDIRECT_QUERY_STRING".$_SERVER['REQUEST_URI']."\n";
+// 		echo "ORIG_URI".$_SERVER['ORIG_URI']."\n";
+		
+		
 		$cache_ext  = '.js'; //file extension
 		$cache_time     = 3600;  //Cache file expires afere these seconds (1 hour = 3600 sec)
 		$cache_folder   = Header::$BUILD_PATH; //folder to store Cache files
@@ -45,6 +52,11 @@ class ResourceHandler extends AbstractHandler {
 			fclose($fp); //Close file pointer
 		}
 		$this->writeHeaders($cache_file);
+		//Browser::printlogsOnHeader();
+		if(RX_MODE_DEBUG) {
+			//unlink($cache_file);
+			header("X-LOG-DELTED: TRUE");			
+		}
 		ob_end_flush();
 	}
 	

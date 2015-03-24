@@ -125,5 +125,23 @@ class Console {
 			echo '</script>';
 		} //end !empty( $this-messages )
 	} //end logs()
+	
+	public function printlogsOnHeader(){
+		//Add the timer the console.log output if desired
+		$this->messages[]['Rudrax:done'] = 'Script processed and loaded in '. ( microtime( true ) - $this->mtime ) .' seconds';
+		$logs = "";
+		if( !empty( $this->messages ) ){
+			foreach( $this->messages as $this->data ){
+				foreach( $this->data as $file =>  $msgObj){
+					if(is_string($msgObj)){
+						$logs.=('["'.$file .' : ","'. $msgObj.'"]');
+					} else {
+						$logs.=('["'.$file .' : ",'. $msgObj['msg'].'];');
+					}
+				}
+			}
+			header("X-BLOGS:".$logs);
+		} //end !empty( $this-messages )
+	} //end logs()
 
 }

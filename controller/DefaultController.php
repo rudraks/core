@@ -11,36 +11,26 @@ include_once(RUDRA."/core/controller/AbstractController.php");
 
 class DefaultController extends AbstractController {
 
-
-	/* Default RudraX Plug
-	 * 
-	 * @RequestMapping(url="combinejs/{mdfile}",type=js)
-	 * 
+	/**
+	 * @RequestMapping(url="template/{temp}",type=template)
 	 */
-// 	function resourceHandler(){
-// 		include_once (RUDRA . "/core/handler/ResourceHandler.php");
-// 		$handler = new ResourceHandler();
-// 		$handler->invokeHandler();
-// 	}
-
-// 		RudraX::mapRequest("template/{temp}",function($temp="nohandler"){
-// 			return RudraX::invokeHandler($temp);
-// 		});
-// 		RudraX::mapRequest('data/{eventname}',function($eventName="dataHandler"){
-// 			$controller = RudraX::getDataController();
-// 			$controller->invokeHandler($eventName);
-// 		});
-
-// 			RudraX::mapRequest("resources.json",function($cb=""){
-// 				require_once(RUDRA.'/core/model/Header.php' );
-// 				echo $cb."((".json_encode(Header::getModules()).").bundles)";
-// 			});
-
-
-// 				// Default Plug for default page
-// 				RudraX::mapRequest("",function(){
-// 					return RudraX::invokeHandler("Index");
-// 				});
-
+	public function renderTemplate($temp="index"){
+		return $temp;
+	}
+	
+	/**
+	 * @RequestMapping(url="data/{action}",type=data)
+	 */
+	public function dataHandler($action="dataHandler"){
+		return $action;
+	}
+	
+	/**
+	 * @RequestMapping(url="",type=page)
+	 */
+	public function sampleDefault ($page="index"){
+		echo "DEFAUL CONTROLER IS NOT SET";
+		return $page;
+	}
 
 }

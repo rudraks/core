@@ -153,10 +153,7 @@ class RudraX {
 		}
 		// Define Custom Request Plugs
 		if(FIRST_RELOAD){
-			header("X-FIRST_RELOAD: TRUE");
 			ClassUtil::scan();
-		} else {
-			header("X-FIRST_RELOAD: FALSE");
 		}
 		
 		self::findAndExecuteController();
@@ -249,12 +246,16 @@ class Config {
 		define("BASE_PATH", dirname(__FILE__) );
 
 		//print_r($GLOBALS ['CONFIG']['GLOBAL']);
+		$header_flags = "FIRST_RELOAD=".FIRST_RELOAD;
 		foreach($GLOBALS ['CONFIG']['GLOBAL'] as $key=>$value){
 			define ( $key, $value);
+			$header_flags.=(";".$key."=".$value);
 		}
+		header("X-FLAGS: ".$header_flags);
 
 		define('Q',(isset($_REQUEST['q']) ? $_REQUEST['q'] : NULL));
-
+		define('Q',(isset($_REQUEST['q']) ? $_REQUEST['q'] : NULL));
+		
 		$path_info = pathinfo($_SERVER['PHP_SELF']);
 		$CONTEXT_PATH = (
 				(Q==NULL) ?
@@ -262,6 +263,7 @@ class Config {
 				: strstr($_SERVER['REQUEST_URI'],Q,true)
 		);
 
+		//echo "CONTEXT_PATH::".Q;
 		define ( 'CONTEXT_PATH', $CONTEXT_PATH);
 		define ('APP_CONTEXT',resolve_path(
 		$CONTEXT_PATH . (get_include_path())
@@ -313,6 +315,12 @@ class Browser {
 			return self::$console->printlogs();
 		}
 	}
+	public static function printlogsOnHeader(){
+		if(BROWSER_LOGS){
+			return self::$console->printlogsOnHeader();
+		}
+	}
+	
 }
 
 class FileUtil {

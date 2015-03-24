@@ -7,14 +7,23 @@ include_once(RUDRA."/core/ClassUtil.php");
 
 function rx_scan_classes(){
 
-	$allController = ClassUtil::getControllerArray();
 
 	$annotations = new Alchemy\Component\Annotations\Annotations();
 
-	$dir_iterator = new RecursiveDirectoryIterator("../");
+	rx_scan_dir($annotations,"../lib/");
+	rx_scan_dir($annotations,"../app/");
+
+	ClassUtil::save();
+}
+
+function rx_scan_dir ($annotations,$dir){
+	
+	$allController = ClassUtil::getControllerArray();
+	
+	$dir_iterator = new RecursiveDirectoryIterator($dir);
 	$iterator = new RecursiveIteratorIterator($dir_iterator, RecursiveIteratorIterator::SELF_FIRST);
 	// could use CHILD_FIRST if you so wish
-
+	
 	foreach ($iterator as $filename=>$file) {
 		if ($file->isFile()) {
 			if(fnmatch("*Handler.php",$file->getPathname())){
@@ -29,16 +38,16 @@ function rx_scan_classes(){
 					$result = $annotations->getClassAnnotations($className);
 					if(isset($result["Handler"]) && isset($result["Handler"][0]) && !empty($result["Handler"][0])){
 						ClassUtil::setHandler($result["Handler"][0], array(
-								"className" => $className,
-								"filePath" => $file->getPathname(),
-								"mtime" => $file->getMTime()
+						"className" => $className,
+						"filePath" => $file->getPathname(),
+						"mtime" => $file->getMTime()
 						));
 						Browser::warn("HandleScanned::",	ClassUtil::getHandler($result["Handler"][0]));
 						ClassUtil::setMTime($className,$file->getMTime());
 					}
 				}
 			} else if(fnmatch("*/controller/*.php",$file->getPathname())){
-
+	
 				require_once $file->getPathname();
 				$className = str_replace(".php", "", $file->getFilename());
 					
@@ -70,20 +79,20 @@ function rx_scan_classes(){
 			} else if(fnmatch("*/model/*.php",$file->getPathname())){
 				require_once $file->getPathname();
 				$className = str_replace(".php", "", $file->getFilename());
-				
+	
 				$scan  = true;
 				if( ClassUtil::getMTime($className)>=$file->getMTime()){
 					$scan = false;
 				}
-				
+	
 				if($scan){
 					$result = $annotations->getClassAnnotations($className);
 					if(isset($result["Model"]) && isset($result["Model"][0]) && !empty($result["Model"][0])){
 						ClassUtil::setModel($result["Model"][0], array(
-								"className" => $className,
-								"filePath" => $file->getPathname(),
-								"mtime" => $file->getMTime(),
-								"type" => $result["Model"][0]
+						"className" => $className,
+						"filePath" => $file->getPathname(),
+						"mtime" => $file->getMTime(),
+						"type" => $result["Model"][0]
 						));
 						Browser::warn("ModelScanned::",	ClassUtil::getModel($result["Model"][0]));
 						ClassUtil::setMTime($className,$file->getMTime());
@@ -92,6 +101,6 @@ function rx_scan_classes(){
 			}
 		}
 	}
+	
 	ClassUtil::setControllerArray($allController);
-	ClassUtil::save();
 }
