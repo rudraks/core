@@ -26,7 +26,7 @@ function rx_scan_dir ($annotations,$dir){
 	
 	foreach ($iterator as $filename=>$file) {
 		if ($file->isFile()) {
-			if(fnmatch("*Handler.php",$file->getPathname())){
+			if(fnmatch("*/handler/*.php",$file->getPathname())){
 				require_once $file->getPathname();
 				$className = str_replace(".php", "", $file->getFilename());
 					
