@@ -13,7 +13,7 @@
 class SampleIndexHandler extends AbstractHandler {
 
 	public function invokeHandler(Smarty $viewModel,Header $header, DataModel $dataModel,
-			User $user,$view="empty") {
+			AbstractUser $user,$view="empty") {
 		$header->title("Sample Handler Test");
 		return $view;
 	}

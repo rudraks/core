@@ -68,7 +68,7 @@ class ClassUtil {
 			include_once $UserClassInfo["filePath"];
 			return $UserClassInfo["className"];
 		} else {
-			include_once "model/AbstarctUser.php";
+			include_once "model/AbstractUser.php";
 			return "DefaultUser";
 		}
 	}

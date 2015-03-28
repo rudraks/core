@@ -30,8 +30,8 @@ RewriteRule ^resources/(.*).(json|css|js|txt|jpeg|jpg|png|gif|eot|svg|ttf|woff|h
 
 RewriteCond %{HTTP_COOKIE} ^.*RX-ENCRYPT-PATH=.*$ [NC]
 RewriteRule ^combinejs/(.*)$ ../build/$1 [ENV=ORIG_URI:$1,ENV=ROUTED:true]
-Header set X-LOG "Rewriting path for file" env=REDIRECT_ROUTED
-Header set X-LOG "Rewriting path for file" env=ROUTED
+#Header set X-LOG "Rewriting path for file" env=REDIRECT_ROUTED
+#Header set X-LOG "Rewriting path for file" env=ROUTED
 
 #RewriteCond %{REQUEST_FILENAME} -f
 #RewriteRule ^(.*) - [S=0]
@@ -43,7 +43,7 @@ RewriteCond %{REQUEST_FILENAME} !-f
 RewriteRule ^../build/(.*).js/(.*)$ index.php?q=combinejs/$1 [ENV=INDEX:true,L,QSA,S=1]
 #RewriteRule (.*)$ combinejs/%{REQUEST_FILENAME}.js?%{QUERY_STRING} [ENV=NOFILE:true]
 #RewriteRule (.*) - [ENV=NOFILE:true]
-Header set X-LOG "has cookie but no file" env=REDIRECT_NOFILE
+#Header set X-LOG "has cookie but no file" env=REDIRECT_NOFILE
 
 # If requested resource exists as a file or directory, skip next two rules
 #RewriteCond %{DOCUMENT_ROOT}/$1 -f
