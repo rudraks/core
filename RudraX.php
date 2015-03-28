@@ -132,6 +132,7 @@ class RudraX {
 	}
 
 	public static function invoke($_conf=array()){
+		$start_time = microtime( true );
 		$global_config = array_merge(array(
 				'CONTROLLER' => 'web.php',
 				'DEFAULT_DB' => 'DB1',
@@ -168,6 +169,8 @@ class RudraX {
 		} else {
 			removecookie('RX-ENCRYPT-PATH');
 		}
+		$total_time = microtime( true )-$start_time;
+		header("X-ProcessTime:".$total_time);
 	}
 
 }
