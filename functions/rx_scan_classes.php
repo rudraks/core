@@ -26,7 +26,7 @@ function rx_scan_dir ($annotations,$dir){
 	
 	foreach ($iterator as $filename=>$file) {
 		if ($file->isFile()) {
-			if(fnmatch("*/handler/*.php",$file->getPathname())){
+			if(fnmatch("*/handler/*.php",$file->getPathname()) || fnmatch("*\\\handler\\\*.php",$file->getPathname())){
 				require_once $file->getPathname();
 				$className = str_replace(".php", "", $file->getFilename());
 					
@@ -46,7 +46,7 @@ function rx_scan_dir ($annotations,$dir){
 						ClassUtil::setMTime($className,$file->getMTime());
 					}
 				}
-			} else if(fnmatch("*/controller/*.php",$file->getPathname())){
+			} else if(fnmatch("*/controller/*.php",$file->getPathname()) || fnmatch("*\\\controller\\\*.php",$file->getPathname())){
 	
 				require_once $file->getPathname();
 				$className = str_replace(".php", "", $file->getFilename());
@@ -76,7 +76,7 @@ function rx_scan_dir ($annotations,$dir){
 					Browser::warn("ControllerScanned::",$allController[$result["RequestMapping"][0]["url"]]);
 					ClassUtil::setMTime($className,$file->getMTime());
 				}
-			} else if(fnmatch("*/model/*.php",$file->getPathname())){
+			} else if(fnmatch("*/model/*.php",$file->getPathname()) || fnmatch("*\\\model\\\*.php",$file->getPathname())){
 				require_once $file->getPathname();
 				$className = str_replace(".php", "", $file->getFilename());
 	

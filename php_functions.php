@@ -17,6 +17,9 @@ function replace_first($search,$replace="",$subject=""){
 function print_js_comment($str){
 	echo "/*  ".$str." */";
 }
+function print_line($str){
+	echo "<br/>  ".$str;
+}
 
 function resolve_path($str){
 	$array = explode( '/', $str);

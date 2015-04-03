@@ -94,7 +94,6 @@ class RudraX {
 	}
 
 	public static function invokeController (){
-
 		if(self::$url_controller_info != NULL) {
 			/*
 			 * Url has been match in newer way
@@ -141,6 +140,7 @@ class RudraX {
 		),$_conf);
 		//Loads all the Constants
 		ob_start ();
+		
 		session_start ();
 		Config::load("../app/config/project.properties","../local/project.properties",$global_config);
 		//Initialze Rudrax
