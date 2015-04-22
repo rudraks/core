@@ -21,4 +21,17 @@ class ResourceController extends AbstractController {
 		$handler->invokeHandler();
 	}
 	
+	/** Default RudraX Plug
+	 *
+	 * @RequestMapping(url="scss/{mdfile}",type=css)
+	 *
+	 */
+	function serveStyle($mdfile){
+		include_once (LIB_PATH . "/leafo/scssphp/scss.inc.php");
+		$scss = new scssc();
+		$scss->setFormatter("scss_formatter_compressed");
+		$server = new scss_server(get_include_path(), get_include_path().BUILD_PATH."/", $scss);
+		$server->serve();
+	}
+	
 }
