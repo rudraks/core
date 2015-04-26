@@ -99,6 +99,7 @@ class AbstractDb
 	public function fetchAll($sql)
 	{
 		$sql = $this->_prepare(func_get_args());
+		$this->sql = $sql;
 		if($this->printQ)  Browser::log($sql);
 		$sth = $this->_link->prepare($sql);
 		$sth->execute();
