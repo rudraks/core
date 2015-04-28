@@ -69,6 +69,7 @@ function rx_scan_dir ($annotations,$dir){
 									"filePath" => $file->getPathname(),
 									"mtime" => $file->getMTime(),
 									"mappingUrl" => $result["RequestMapping"][0]["url"],
+									"cache" => (isset($result["RequestMapping"][0]["cache"]) ? $result["RequestMapping"][0]["cache"] : FALSE),
 									"type" => (isset($result["RequestMapping"][0]["type"]) ? $result["RequestMapping"][0]["type"] : NULL)
 							);
 						}
