@@ -282,6 +282,7 @@ class Config {
 class Browser {
 
 	private static $console;
+	private static $messageCounter = 0;
 
 	public static function  init(){
 		self::$console = new Console();
@@ -302,6 +303,9 @@ class Browser {
 	}
 	public static function warn(){
 		return self::logMessage(func_get_args (), debug_backtrace (), "console.warn");
+	}
+	public static function header($total_time){
+		header("X-LOG-".(++self::$messageCounter).": ".$total_time);
 	}
 	private static function logMessage($args,$trace,$logType){
 		$msgData = "";

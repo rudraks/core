@@ -25,6 +25,8 @@ class ResourceHandler extends AbstractHandler {
 		$cache_file     = $cache_folder.md5($dynamic_url).$cache_ext; // construct a cache file
 		$ignore = false; //(in_array($dynamic_url,$ignore_pages))?true:false; //check if url is in ignore list
 		
+		Browser::header("RX_MODE_DEBUG".RX_MODE_DEBUG);
+		
 		if(!RX_MODE_DEBUG){
 			//if (!$ignore && file_exists($cache_file) && time() - $cache_time < filemtime($cache_file)) { //check Cache exist and it's not expired.
 			if (!$ignore && file_exists($cache_file)) { //check Cache exist and it's not expired.

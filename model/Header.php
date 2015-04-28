@@ -32,6 +32,7 @@ class Header {
 	public static $webmodules = null;
 	public static $modulefiles = null;
 	public static $BUILD_PATH;
+	public static $RX_JS_MIN = false;
 	
 	
 	public static function init(){
@@ -197,7 +198,7 @@ class Header {
 	public function minify(){
 		if(RX_MODE_DEBUG || self::$cache->isEmpty()){
 			foreach($this->scripts as $key=>$value){
-				if(RX_JS_MIN && !$this->scripts[$key]["remote"]){
+				if($this->const['RX_JS_MIN'] && !$this->scripts[$key]["remote"]){
 					$newName = self::$BUILD_PATH.$value["file"];
 					$this->scripts[$key]["exists"] = file_exists(get_include_path().$value["file"]);
 					$this->scripts[$key]["build_path"] = $newName;
@@ -208,10 +209,8 @@ class Header {
 				}
 			}
 			
-			Browser::warn("minifying...",$this->scripts);
-			
 			foreach($this->css as $key=>$value){
-				if(RX_JS_MIN && !$this->css[$key]["remote"]){
+				if($this->const['RX_JS_MIN'] && !$this->css[$key]["remote"]){
 					Browser::warn("minifying...",$this->css[$key]["minified"],file_exists(get_include_path().$value["file"]),$value["file"]);
 					$newName = self::$BUILD_PATH.$value["file"];
 					$this->css[$key]["exists"] = file_exists($value["file"]);
@@ -227,11 +226,11 @@ class Header {
 	
 	public function printMinifiedJs ($files){
 		$newfiles = array();
-		Browser::warn("CONTEXT_PATH...",CONTEXT_PATH);
+
 		foreach($files as $key=>$file){
 			$new_file = str_replace(CONTEXT_PATH, "", $file);
 			$newfiles[] = $filFile;
-			if(RX_JS_MIN){
+			if($this->const['RX_JS_MIN']){
 				Browser::warn("minifying...",get_include_path().$new_file);
 				$filFile = $this->minified->minify(get_include_path().$new_file,self::$BUILD_PATH.$new_file);
 				//print_js_comment("-----".get_include_path().$new_file."---".$file."---".$filFile);
