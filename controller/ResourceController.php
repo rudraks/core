@@ -30,7 +30,7 @@ class ResourceController extends AbstractController {
 		include_once (LIB_PATH . "/leafo/scssphp/scss.inc.php");
 		$scss = new scssc();
 		$scss->setFormatter("scss_formatter_compressed");
-		$server = new scss_server(get_include_path(), get_include_path().BUILD_PATH."/", $scss);
+		$server = new scss_server(get_include_path(), get_include_path().BUILD_PATH."/scss/", $scss);
 		$server->serve();
 	}
 	

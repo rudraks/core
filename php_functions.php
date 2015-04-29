@@ -41,6 +41,20 @@ function resolve_path($str){
 	return $domain . '/' . implode( '/', $parents);
 }
 
+function mkdir_r($dirName, $rights=0777){
+	$dirs = explode('/', $dirName);
+	$dir='';
+	foreach ($dirs as $part) {
+		$dir.=$part.'/';
+		if (!is_dir($dir) && strlen($dir)>0){
+			if(!mkdir($dir, $rights)){
+				return false;
+			}
+		}
+	}
+	return true;
+}
+
 function removecookie ($key,$context="/"){
 	if (isset($_COOKIE[$key])) {
 		unset($_COOKIE[$key]);
