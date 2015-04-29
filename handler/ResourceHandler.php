@@ -20,7 +20,7 @@ class ResourceHandler extends AbstractHandler {
 		$cache_time     = 3600;  //Cache file expires afere these seconds (1 hour = 3600 sec)
 		$cache_folder   = Header::$BUILD_PATH; //folder to store Cache files
 		//$ignore_pages   = array('', '');
-		$dynamic_url    = $_GET["@"];; //$_SERVER['QUERY_STRING']; // requested dynamic page (full url)
+		$dynamic_url    = $_SERVER['QUERY_STRING']; // requested dynamic page (full url)
 		//echo "Q==".$_SERVER['QUERY_STRING'];
 		$cache_file     = $cache_folder.md5($dynamic_url).$cache_ext; // construct a cache file
 		$ignore = false; //(in_array($dynamic_url,$ignore_pages))?true:false; //check if url is in ignore list
