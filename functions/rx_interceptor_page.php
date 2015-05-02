@@ -2,8 +2,7 @@
 include_once (RUDRA . "/smarty/Smarty.class.php");
 include_once (RUDRA . "/core/model/Header.php");
 include_once (RUDRA . "/core/model/Page.php");
-
-function rx_interceptor_page($user, $info, $handlerName, HttpRequest $request) {
+function rx_interceptor_page($user, $info, $handlerName) {
 	$user->validate ();
 	include_once (RUDRA . "/core/handler/AbstractHandler.php");
 	
@@ -27,14 +26,14 @@ function rx_interceptor_page($user, $info, $handlerName, HttpRequest $request) {
 				$tpl->debugging = RX_SMARTY_DEBUG;
 				$header = new Header ( $tpl );
 				$page = new Page ();
-				$view = RudraX::invokeMethodByReflectionClass ( $tempClass, $temp, 'invokeHandler', array (
+				$view = call_method_by_class ( $tempClass, $temp, 'invokeHandler', array (
 						'tpl' => $tpl,
 						'viewModel' => $tpl,
 						'user' => $user,
 						'header' => $header,
 						'page' => $page,
 						'dataModel' => $page->data,
-						'data' => new RequestData ( $request->get ( "data" ) ) 
+						'data' => new RequestData ( get_request_param ( "data" ) ) 
 				) );
 				if (! isset ( $view )) {
 					$view = $handlerName;

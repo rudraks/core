@@ -1,4 +1,4 @@
-<html>
+<html manifest="{$smarty.const.CONTEXT_PATH}cache.manifest?d" >
 <head>
 <meta name="viewport"
 	content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"/>
@@ -17,6 +17,17 @@ var CONTEXT_PATH = '{$smarty.const.CONTEXT_PATH}';
 var RX_MODE_DEBUG = !!('{$smarty.const.RX_MODE_DEBUG}');
 var RELOAD_VERSION = ('{$smarty.const.RELOAD_VERSION}');
 {foreach $header->const as $const}var {$const@key} = '{$const}';{/foreach}
+</script>
+<script>
+["checking","error","noupdate","downloading","progress","updateready"].map(function(key){
+	console.info("attaching",key)
+	window.applicationCache.addEventListener(key, function(){ console.info("-----",key)})
+}, false);
+try{
+window.applicationCache.update()
+} catch(e){
+	console.info("ee",e)
+}
 </script>
 </head>
 <body>

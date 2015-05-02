@@ -1,7 +1,6 @@
 <?php
 include_once (RUDRA . "/smarty/Smarty.class.php");
-
-function rx_interceptor_template($user, $info, $handlerName, HttpRequest $request) {
+function rx_interceptor_template($user, $info, $handlerName) {
 	$user->validate ();
 	include_once (RUDRA . "/core/handler/AbstractHandler.php");
 	
@@ -25,13 +24,13 @@ function rx_interceptor_template($user, $info, $handlerName, HttpRequest $reques
 				
 				$tpl->debugging = RX_SMARTY_DEBUG;
 				$page = new Page ();
-				$view = RudraX::invokeMethodByReflectionClass ( $tempClass, $temp, 'invokeHandler', array (
+				$view = call_method_by_class ( $tempClass, $temp, 'invokeHandler', array (
 						'tpl' => $tpl,
 						'viewModel' => $tpl,
 						'user' => $user,
 						'page' => $page,
 						'dataModel' => $page->data,
-						'data' => new RequestData ( $request->get ( "data" ) ) 
+						'data' => new RequestData ( get_request_param ( "data" ) ) 
 				) );
 				if (! isset ( $view )) {
 					$view = $handlerName;

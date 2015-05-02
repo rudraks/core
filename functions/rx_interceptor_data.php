@@ -2,10 +2,11 @@
 /**
  *  Whatever data is returned by handler will be echo'd as it is
  * 
- * @param unknown $user
- * @param unknown $handlerName
+ * @param AbstractUser $user
+ * @param Array $info
+ * @param String $handlerName
  */
-function rx_interceptor_data($user, $info, $handlerName, HttpRequest $request) {
+function rx_interceptor_data($user, $info, $handlerName) {
 	$user->validate ();
 	include_once (RUDRA . "/core/handler/AbstractHandler.php");
 	
@@ -23,9 +24,9 @@ function rx_interceptor_data($user, $info, $handlerName, HttpRequest $request) {
 		
 		if ($temp != NULL) {
 			if ($tempClass->hasMethod ( "invokeHandler" )) {
-				$resp = RudraX::invokeMethodByReflectionClass ( $tempClass, $temp, 'invokeHandler', array (
+				$resp = call_method_by_class ( $tempClass, $temp, 'invokeHandler', array (
 						'user' => $user,
-						'data' => new RequestData ( $request->get ( "data" ) ) 
+						'data' => new RequestData ( get_request_param ( "data" ) ) 
 				) );
 				if (isset ( $resp ))
 					echo $resp;

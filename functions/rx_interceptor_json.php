@@ -4,9 +4,10 @@
  *  Whatever Data is returned by Hanlder, should be an array will be rendered as array on response
  * 
  * @param AbstractUser $user
+ * @param array $controllerInfo
  * @param String $handlerName
  */
-function rx_interceptor_json($user, $controllerInfo, $handlerName, HttpRequest $request) {
+function rx_interceptor_json($user, $controllerInfo, $handlerName) {
 	$user->validate ();
 	include_once (RUDRA . "/core/handler/AbstractHandler.php");
 	
@@ -24,9 +25,9 @@ function rx_interceptor_json($user, $controllerInfo, $handlerName, HttpRequest $
 		
 		if ($temp != NULL) {
 			if ($tempClass->hasMethod ( "invokeHandler" )) {
-				$resp = RudraX::invokeMethodByReflectionClass ( $tempClass, $temp, 'invokeHandler', array (
+				$resp = call_method_by_class ( $tempClass, $temp, 'invokeHandler', array (
 						'user' => $user,
-						'data' => new RequestData ( $request->get ( "data" ) )
+						'data' => new RequestData ( get_request_param ( "data" ) ) 
 				) );
 				if (isset ( $resp ))
 					echo json_encode ( $resp );

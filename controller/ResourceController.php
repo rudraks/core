@@ -34,4 +34,29 @@ class ResourceController extends AbstractController {
 		$server->serve();
 	}
 	
+	/** Default RudraX Plug
+	 *
+	 * @RequestMapping(url="cache.manifest",type=data,cache = false)
+	 *
+	 */
+	function manifest($mdfile){
+		header('Content-type: text/cache-manifest');
+		header('Cache-Control: no-cache');
+		include_once (RUDRA . "/smarty/Smarty.class.php");
+		$tpl = new Smarty ();
+		call_user_func ( rx_function ( "rx_set_smarty_paths" ), ($tpl) );
+		$tpl->display ( get_include_path () . RUDRA . "/core/view/manifest.tpl" );
+		//readfile("../".RUDRA."/core/offline/cache.manifest");
+	}
+	
+	/** Default RudraX Plug
+	 *
+	 * @RequestMapping(url="offline.html",type=data,cache = true)
+	 *
+	 */
+	function offline($mdfile){
+		header('Content-type: text/html');
+		header('Cache-Control: no-cache');
+		readfile("../".RUDRA."/core/offline/offline.html");
+	}
 }

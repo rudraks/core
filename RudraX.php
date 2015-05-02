@@ -5,7 +5,7 @@
  */
 require_once "php_functions.php";
 require_once "Console.php";
-include_once ("model/AbstractRequest.php");
+// include_once ("model/AbstractRequest.php");
 include_once ("model/RxCache.php");
 include_once ("ClassUtil.php");
 global $RDb;
@@ -28,43 +28,6 @@ class RudraX {
 		include_once ("db/AbstractDb.php");
 		return new AbstractDb ( Config::get ( $configname ) );
 	}
-	public static function getArgsArray($reflectionMethod, $argArray, AbstractRequest $request = NULL, $skipEmpty = FALSE) {
-		$arr = array ();
-		$from_request = true;
-		if ($request == NULL || $request == TRUE) {
-			$request = HttpRequest::getInstance ();
-		} else if ($request == FALSE) {
-			$from_request = FALSE;
-		}
-		foreach ( $reflectionMethod->getParameters () as $key => $val ) {
-			if (isset ( $argArray [$val->getName ()] ) && ! ($skipEmpty && empty ( $argArray [$val->getName ()] ))) {
-				$arr [$val->getName ()] = $argArray [$val->getName ()];
-			} else if ($from_request && ! is_null ( $request->get ( $val->getName (), $skipEmpty ) )) {
-				$arr [$val->getName ()] = $request->get ( $val->getName () );
-			} else if ($val->isDefaultValueAvailable ()) {
-				$arr [$val->getName ()] = $val->getDefaultValue ();
-			} else {
-				$arr [$val->getName ()] = NULL;
-			}
-		}
-		return $arr;
-	}
-	public static function invokeMethodByReflectionClass(ReflectionClass $reflectionClass, $object,
-			$methodName, $argArray, AbstractRequest $request = NULL) {
-		$reflectionMethod = $reflectionClass->getMethod ( $methodName );
-		return call_user_func_array ( array (
-				$object,
-				$methodName
-		), self::getArgsArray ( $reflectionMethod, $argArray, $request ) );
-	}
-	public static function invokeMethod($object, $methodName, $argArray, AbstractRequest $request = NULL) {
-		$reflectionClass = new ReflectionClass ( get_class ( $object ) );
-		$reflectionMethod = $reflectionClass->getMethod ( $methodName );
-		return call_user_func_array ( array (
-				$object,
-				$methodName
-		), self::getArgsArray ( $reflectionMethod, $argArray, $request ) );
-	}
 	public static $url_callback = null;
 	public static $url_size = 0;
 	public static $url_varmap = null;
@@ -72,7 +35,7 @@ class RudraX {
 	public static $url_controller_info = null;
 	public static function getMapObject($mapping) {
 		$mapObj = self::$url_cache->get ( $mapping );
-
+		
 		if ($mapObj == null || RX_MODE_DEBUG) {
 			$mapper = preg_replace ( '/\{(.*?)\}/m', '(?P<$1>[\w\.]*)', str_replace ( '/', '#', $mapping ) );
 			$mapperKey = preg_replace ( '/\{(.*?)\}/m', '*', $mapping ) . "*";
@@ -82,7 +45,7 @@ class RudraX {
 					"mapper" => $mapper,
 					"mapperArray" => $mapperArray,
 					"mapperSize" => $mapperSize,
-					"mapperKey" => $mapperKey
+					"mapperKey" => $mapperKey 
 			);
 			self::$url_cache->set ( $mapping, $mapObj );
 		}
@@ -101,14 +64,12 @@ class RudraX {
 		if (self::$url_controller_info != NULL) {
 			/*
 			 * Url has been match in newer way
-			*/
+			 */
 			include_once self::$url_controller_info ["filePath"];
 			$controller = new self::$url_controller_info ["className"] ();
 			$controller->loadSession ();
 			$request = HttpRequest::getInstance ();
-			$controller->_interceptor_ ( self::$url_controller_info,
-					self::invokeMethod ( $controller, self::$url_controller_info ["method"],
-							self::$url_varmap), $request);
+			$controller->_interpret_ ( self::$url_controller_info, self::$url_varmap );
 		}
 	}
 	public static function findAndExecuteController() {
@@ -128,7 +89,7 @@ class RudraX {
 		$info = explode ( "/", $path );
 		return array (
 				"class_name" => end ( $info ),
-				"file_path" => $path
+				"file_path" => $path 
 		);
 	}
 	public static function invoke($_conf = array()) {
@@ -137,13 +98,13 @@ class RudraX {
 				'CONTROLLER' => 'web.php',
 				'DEFAULT_DB' => 'DB1',
 				'CONSOLE_FUN' => 'console.log',
-				'RX_MODE_DEBUG' => FALSE
+				'RX_MODE_DEBUG' => FALSE 
 		), $_conf );
 		// Loads all the Constants
 		ob_start ();
-
+		
 		session_start ();
-		Config::load ( "../config/project.properties", "../app/config/project.properties", $global_config );
+		Config::load ( "../config/project.properties", "../app/meta/project.properties", $global_config );
 		// Initialze Rudrax
 		self::init ();
 		global $RDb;
@@ -157,9 +118,9 @@ class RudraX {
 		if (FIRST_RELOAD) {
 			ClassUtil::scan ();
 		}
-
+		
 		self::findAndExecuteController ();
-
+		
 		self::invokeController ();
 		if ($db_connect) {
 			$RDb->close ();
@@ -168,7 +129,7 @@ class RudraX {
 		/*
 		 * $RX_ENCRYPT_PATH is applicable only if either MINFY or MERGE
 		 */
-		$RX_ENCRYPT_PATH = !RX_MODE_DEBUG &&  ($config["CLIENT_CONST"]["RX_JS_MIN"] || $config["CLIENT_CONST"]["RX_JS_MERGE"]);
+		$RX_ENCRYPT_PATH = ! RX_MODE_DEBUG && ($config ["CLIENT_CONST"] ["RX_JS_MIN"] || $config ["CLIENT_CONST"] ["RX_JS_MERGE"]);
 		if ($RX_ENCRYPT_PATH) {
 			setcookie ( 'RX-ENCRYPT-PATH', "TRUE", 0, "/" );
 		} else {
@@ -191,7 +152,7 @@ class Config {
 		} else
 			return defined ( $section ) ? constant ( $section ) : FALSE;
 	}
-
+	
 	// CACHE MAINTAIN
 	public static function setValue($key, $value) {
 		return self::$cache->set ( $key, $value );
@@ -204,52 +165,52 @@ class Config {
 	}
 	public static function read($glob_config, $file, $file2 = null) {
 		$debug = isset ( $glob_config ["RX_MODE_DEBUG"] ) && ($glob_config ["RX_MODE_DEBUG"] == TRUE);
-
+		
 		self::$cache = new RxCache ( "config_" . $glob_config ['CONTROLLER'], true );
-
+		
 		$reloadCache = FALSE;
 		header ( "FLAGS:" . self::$cache->isEmpty () . "-" . $_glob_config ["RX_MODE_DEBUG"] . "-" . $debug );
 		if (self::$cache->isEmpty ()) {
 			$reloadCache = TRUE;
 		} else {
 			$_glob_config = self::$cache->get ( "GLOBAL" );
-			if ($_glob_config ["RX_MODE_DEBUG"] != $debug || isset($_GET['ModPagespeed'])) {
+			if ($_glob_config ["RX_MODE_DEBUG"] != $debug || isset ( $_GET ['ModPagespeed'] )) {
 				$reloadCache = TRUE;
 			}
 		}
 		
-		$RELOAD_VERSION = self::$cache->get("RELOAD_VERSION");
-
+		$RELOAD_VERSION = self::$cache->get ( "RELOAD_VERSION" );
+		
 		if ($debug || $reloadCache) {
 			define ( "FIRST_RELOAD", TRUE );
 			$RELOAD_VERSION = microtime ( true );
-			self::$cache->set("RELOAD_VERSION",$RELOAD_VERSION);
-				
+			self::$cache->set ( "RELOAD_VERSION", $RELOAD_VERSION );
+			
 			$DEFAULT_CONFIG = parse_ini_file ( "_project.properties", TRUE );
 			$localConfig = parse_ini_file ( $file, TRUE );
 			$localConfig = array_replace_recursive ( $DEFAULT_CONFIG, $localConfig );
-				
+			
 			if ($file2 != null && file_exists ( $file2 )) {
 				$localConfig = array_replace_recursive ( $localConfig, parse_ini_file ( $file2, TRUE ) );
 			}
 			self::$cache->merge ( $localConfig );
 			self::$cache->set ( 'GLOBAL', array_merge ( $DEFAULT_CONFIG ['GLOBAL'], $localConfig ['GLOBAL'], $glob_config ) );
-				
+			
 			self::$cache->save ();
 		} else {
 			define ( "FIRST_RELOAD", FALSE );
 		}
-		define( "RELOAD_VERSION",$RELOAD_VERSION);
+		define ( "RELOAD_VERSION", $RELOAD_VERSION );
 		return self::$cache->getArray ();
 		;
 	}
 	public static function load($file, $file2 = null, $glob_config = array()) {
 		$GLOBALS ['CONFIG'] = self::read ( $glob_config, $file, $file2 );
-
+		
 		set_include_path ( $GLOBALS ['CONFIG'] ['GLOBAL'] ['WORK_DIR'] );
-
+		
 		define ( "BASE_PATH", dirname ( __FILE__ ) );
-
+		
 		// print_r($GLOBALS ['CONFIG']['GLOBAL']);
 		$header_flags = "FIRST_RELOAD=" . FIRST_RELOAD;
 		foreach ( $GLOBALS ['CONFIG'] ['GLOBAL'] as $key => $value ) {
@@ -257,12 +218,12 @@ class Config {
 			$header_flags .= (";" . $key . "=" . $value);
 		}
 		header ( "X-FLAGS: " . $header_flags );
-
+		
 		define ( 'Q', (isset ( $_REQUEST ['q'] ) ? $_REQUEST ['q'] : NULL) );
-
+		
 		$path_info = pathinfo ( $_SERVER ['PHP_SELF'] );
 		$CONTEXT_PATH = ((Q == NULL) ? strstr ( $_SERVER ['PHP_SELF'], $path_info ['basename'], TRUE ) : strstr ( $_SERVER ['REQUEST_URI'], Q, true ));
-
+		
 		// echo "CONTEXT_PATH::".Q;
 		define ( 'CONTEXT_PATH', $CONTEXT_PATH );
 		define ( 'APP_CONTEXT', resolve_path ( $CONTEXT_PATH . (get_include_path ()) ) );
@@ -296,8 +257,8 @@ class Browser {
 	public static function warn() {
 		return self::logMessage ( func_get_args (), debug_backtrace (), "console.warn" );
 	}
-	public static function header($total_time){
-		header("X-LOG-".(++self::$messageCounter).": ".$total_time);
+	public static function header($total_time) {
+		header ( "X-LOG-" . (++ self::$messageCounter) . ": " . $total_time );
 	}
 	private static function logMessage($args, $trace, $logType) {
 		$msgData = "";
@@ -324,13 +285,13 @@ class FileUtil {
 	public static function write($file, $content) {
 		return file_put_contents ( "../build/" . $file, $content );
 	}
-	public static function mkdir($dirName, $rights=0777){
-		$dirs = explode('/', "../build/".$dirName);
-		$dir='';
-		foreach ($dirs as $part) {
-			$dir.=$part.'/';
-			if (!is_dir($dir) && strlen($dir)>0){
-				if(!mkdir($dir, $rights)){
+	public static function mkdir($dirName, $rights = 0777) {
+		$dirs = explode ( '/', "../build/" . $dirName );
+		$dir = '';
+		foreach ( $dirs as $part ) {
+			$dir .= $part . '/';
+			if (! is_dir ( $dir ) && strlen ( $dir ) > 0) {
+				if (! mkdir ( $dir, $rights )) {
 					return false;
 				}
 			}
