@@ -68,7 +68,6 @@ class RudraX {
 			include_once self::$url_controller_info ["filePath"];
 			$controller = new self::$url_controller_info ["className"] ();
 			$controller->loadSession ();
-			$request = HttpRequest::getInstance ();
 			$controller->_interpret_ ( self::$url_controller_info, self::$url_varmap );
 		}
 	}

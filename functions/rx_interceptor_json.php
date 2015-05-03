@@ -24,13 +24,19 @@ function rx_interceptor_json($user, $controllerInfo, $handlerName) {
 		}
 		
 		if ($temp != NULL) {
-			if ($tempClass->hasMethod ( "invokeHandler" )) {
-				$resp = call_method_by_class ( $tempClass, $temp, 'invokeHandler', array (
-						'user' => $user,
-						'data' => new RequestData ( get_request_param ( "data" ) ) 
-				) );
-				if (isset ( $resp ))
-					echo json_encode ( $resp );
+			try{
+				if ($tempClass->hasMethod ( "invokeHandler" )) {
+					$resp = call_method_by_class ( $tempClass, $temp, 'invokeHandler', array (
+							'user' => $user,
+							'data' => new RequestData ( get_request_param ( "data" ) )
+					) );
+					if (isset ( $resp ))
+						echo json_encode ( $resp );
+				}	
+			} catch (Exception $e){
+				echo json_encode (array(
+						"error" => $e 
+				));
 			}
 		}
 	}
