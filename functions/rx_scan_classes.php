@@ -10,8 +10,15 @@ function rx_scan_classes(){
 
 	$annotations = new Alchemy\Component\Annotations\Annotations();
 
-	rx_scan_dir($annotations,"../lib/");
-	rx_scan_dir($annotations,"../app/");
+	if(is_dir("../lib")){
+		rx_scan_dir($annotations,"../lib/");
+	} else {
+		echo "Error:Library directory not found on project root.";
+	}
+	
+	if(is_dir("../app")){
+		rx_scan_dir($annotations,"../app/");
+	}
 
 	ClassUtil::save();
 }
