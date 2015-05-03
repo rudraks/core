@@ -94,6 +94,7 @@ class ResourceHandler extends AbstractHandler {
 	
 			// Client's cache IS current, so we just respond '304 Not Modified'.
 			header('Last-Modified: '.gmdate('D, d M Y H:i:s', $fileModTime).' GMT', true, 304);
+			header('HTTP/1.1 304 Not Modified');
 			readfile($graphicFileName);
 		} else {
 			// Image not cached or cache outdated, we respond '200 OK' and output the image.
@@ -102,7 +103,6 @@ class ResourceHandler extends AbstractHandler {
 			header('Content-transfer-encoding: binary');
 			header('Content-length: '.filesize($graphicFileName));
 			header('X-File-Name: '.$graphicFileName);
-	
 			header( 'Cache-Control: max-age=2678400' );
 	
 			readfile($graphicFileName);
