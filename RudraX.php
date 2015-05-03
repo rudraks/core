@@ -182,12 +182,16 @@ class Config {
 		$RELOAD_VERSION = self::$cache->get ( "RELOAD_VERSION" );
 		
 		if ($debug || $reloadCache) {
+			FileUtil::checkDirectory ();
 			define ( "FIRST_RELOAD", TRUE );
 			$RELOAD_VERSION = microtime ( true );
 			self::$cache->set ( "RELOAD_VERSION", $RELOAD_VERSION );
 			
 			$DEFAULT_CONFIG = parse_ini_file ( "_project.properties", TRUE );
-			$localConfig = parse_ini_file ( $file, TRUE );
+			$localConfig = array ();
+			if (file_exists ( $file )) {
+				$localConfig = parse_ini_file ( $file, TRUE );
+			}
 			$localConfig = array_replace_recursive ( $DEFAULT_CONFIG, $localConfig );
 			
 			if ($file2 != null && file_exists ( $file2 )) {
@@ -282,6 +286,15 @@ class Browser {
 	}
 }
 class FileUtil {
+	public static function checkDirectory() {
+		try {
+			if (! is_dir ( "../build/" )) {
+				self::mkdir ( "cache" );
+			}
+		} catch ( Exception $e ) {
+			echo "build directory not found in project root, please create with appropritae permissions and try again";
+		}
+	}
 	public static function write($file, $content) {
 		return file_put_contents ( "../build/" . $file, $content );
 	}
