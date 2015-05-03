@@ -103,7 +103,7 @@ class RudraX {
 		ob_start ();
 		
 		session_start ();
-		Config::load ( "../config/project.properties", "../app/meta/project.properties", $global_config );
+		Config::load ( "../app/meta/project.properties", "../config/project.properties", $global_config );
 		// Initialze Rudrax
 		self::init ();
 		global $RDb;
