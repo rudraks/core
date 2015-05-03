@@ -239,6 +239,11 @@ class Header {
 			} else {
 				readfile(get_include_path().$new_file);
 			}
+			if(BROWSER_LOGS){
+				echo ";console.info('files_excuted:',".json_encode($files).");";
+			} else {
+				echo ";";
+			}
 		}
 		return $newfiles;
 	}
