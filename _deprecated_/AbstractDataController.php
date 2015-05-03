@@ -4,7 +4,6 @@
  * To change this license header, choose License Headers in Project Properties. To change this template file, choose Tools | Templates and open the template in the editor.
 */
 include_once (RUDRA . "/core/controller/AbstractRxController.php");
-include_once (RUDRA . "/core/model/EventRequest.php");
 
 class AbstractDataController extends AbstractRxController {
 
@@ -25,8 +24,6 @@ class AbstractDataController extends AbstractRxController {
 
 		if ($temp != NULL) {
 			if ($tempClass->hasMethod("invokeHandler" )) {
-				//$eventRequest = new EventRequest();
-				//$eventRequest->setData();
 				$resp =  RudraX::invokeMethodByReflectionClass($tempClass,$temp,'invokeHandler',array(
 						'user' => $user
 				));
