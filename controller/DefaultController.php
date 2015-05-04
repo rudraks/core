@@ -29,7 +29,6 @@ class DefaultController extends AbstractController {
 	 * @RequestMapping(url="",type=page)
 	 */
 	public function sampleDefault ($page="index"){
-		echo "DEFAUL CONTROLER IS NOT SET";
 		return $page;
 	}
 

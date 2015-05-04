@@ -47,7 +47,15 @@ function rx_interceptor_page($user, $info, $handlerName) {
 				$tpl->assign ( 'RESOURCE_PATH', RESOURCE_PATH );
 				$tpl->assign ( 'METAS', $header->metas );
 				$tpl->assign ( 'TITLE', $header->title );
-				$tpl->assign ( 'BODY_FILES', $view . TEMP_EXT );
+				$view_path = $view . TEMP_EXT;
+				
+				if(!file_exists($view_path)){
+					$tpl->setTemplateDir(get_include_path() .RUDRA . "/core/view");
+					//$view_path = get_include_path () . RUDRA . "/core/view/".$view.TEMP_EXT;
+					//$view_path = get_include_path () . RUDRA . "../view/".$view.TEMP_EXT;
+				}
+				
+				$tpl->assign ( 'BODY_FILES', $view_path );
 				$tpl->assign ( 'page_json', json_encode ( $page->data->data ) );
 				$tpl->display ( get_include_path () . RUDRA . "/core/view/full.tpl" );
 				Browser::log ( "header", $header->css, $header->scripts );
