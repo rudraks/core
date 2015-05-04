@@ -1,15 +1,20 @@
 {
-    "name": "rudrax/core",
-    "type": "library",
-    "description": "Suporting library for Rudrax",
-    "keywords": ["rudra", "API", "controller","smarty"],
-    "license": "MIT",
-    
-    "require": {
-    	"rudrax/application" : "1.*",
-    	"rudrax/annotations" : "1.*",
-        "rudrax/smarty": "3.*",
-        "rudrax/phpfastcache": "2.*",
-        "rudrax/magicmin": "2.5.*"
-    }
+	"name" : "rudrax/core",
+	"type" : "library",
+	"description" : "Suporting library for Rudrax",
+	"keywords" : [
+		"rudra",
+		"API",
+		"controller",
+		"smarty"
+	],
+	"license" : "MIT",
+	"require" : {
+		"rudrax/application" : "1.*",
+		"rudrax/annotations" : "1.*",
+		"rudrax/smarty" : "3.*",
+		"rudrax/phpfastcache" : "2.*",
+		"rudrax/magicmin" : "2.5.*",
+		"leafo/scssphp": ">=0.0.12"
+	}
 }

@@ -15,6 +15,7 @@ class SampleIndexHandler extends AbstractHandler {
 	public function invokeHandler(Smarty $viewModel,Header $header, DataModel $dataModel,
 			AbstractUser $user,$view="empty") {
 		$header->title("My Website");
+		$header->import("default_bundle");
 		return $view;
 	}
 
