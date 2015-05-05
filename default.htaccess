@@ -21,99 +21,60 @@ RewriteRule ^resources/(.*)\.(css|js)$ ../build/resources/$1.$2 [L]
 RewriteRule ^lib/(.*)\.(json|css|js|txt|jpeg|jpg|png|gif|eot|svg|ttf|woff|html)$ ../lib/$1.$2 [L]
 RewriteRule ^resources/(.*)\.(json|css|js|txt|jpeg|jpg|png|gif|eot|svg|ttf|woff|html)$ ../resources/$1.$2 [L]
 
-RewriteRule ^lib/(.*).(scss)$ scss/?p=lib/$1.scss
+RewriteRule ^lib/(.*)\.(scss)$ scss/?p=lib/$1.scss
 RewriteRule ^resources/(.*)\.(scss)$ scss/?p=resources/$1.scss
-
-#RewriteCond %{HTTP_COOKIE} ^.*RX-ENCRYPT-PATH=.*$ [NC]
-#RewriteCond %{DOCUMENT_ROOT}../build/$1 !-f
-#RewriteRule (.*) - [ENV=NOFILE:true,S=1]
-#Header set X-LOG "has cookie but no file" env=NOFILE
-
-#RewriteRule ^(.*) - [ENV=ORIG_URI:$1]
 
 RewriteCond %{HTTP_COOKIE} ^.*RX-ENCRYPT-PATH=.*$ [NC]
 RewriteRule ^combinejs/(.*)$ ../build/$1 [ENV=ORIG_URI:$1,ENV=ROUTED:true]
-Header set X-LOG "Rewriting path for file" env=REDIRECT_ROUTED
-Header set X-LOG "Rewriting path for file" env=ROUTED
-
-#RewriteCond %{REQUEST_FILENAME} -f
-#RewriteRule ^(.*) - [S=0]
 
 RewriteCond %{ENV:ROUTED} ^true$
 RewriteCond %{REQUEST_FILENAME} !-f
-#RewriteRule ^../build/(.*)$ combinejs/%{ENV:ORIG_URI}/ok/ [ENV=NOFILE:true]
-#SOME WEIRD THING IS HAPPENING HERE NEED TO CHECK ON WINDOWS IF IT WORKS
 RewriteRule ^../build/(.*).js/(.*)$ index.php?q=combinejs/$1 [ENV=INDEX:true,L,QSA,S=1]
-#RewriteRule (.*)$ combinejs/%{REQUEST_FILENAME}.js?%{QUERY_STRING} [ENV=NOFILE:true]
-#RewriteRule (.*) - [ENV=NOFILE:true]
-Header set X-LOG "has cookie but no file" env=REDIRECT_NOFILE
-
-# If requested resource exists as a file or directory, skip next two rules
-#RewriteCond %{DOCUMENT_ROOT}/$1 -f
-#RewriteRule (.*) - [S=1]
-#Header set X-CHUD "max-age=604800, public"
-
-#http://localhost/medicom/web/styles/?p=med/med.app.scss
-#RewriteRule ^style/(.*)$ index.php?p=$1 [ENV=INDEX:true,L,QSA]
 
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^(.*)$ index.php?q=$1 [ENV=INDEX:true,L,QSA]
-#Header set X-LOG "I am via index" env=REDIRECT_INDEX
 
 <ifModule mod_headers.c>
-	# Turn on Expires and set default expires to 3 days
-	ExpiresActive On
-	ExpiresDefault A259200
-	
-	ExpiresByType application/x-shockwave-flash "access plus 2592000 seconds"
-	ExpiresByType text/css A2419200
-	ExpiresByType text/javascript A2419200
-	ExpiresByType text/json A2419200
-	ExpiresByType application/javascript A2419200
-	ExpiresByType application/x-javascript A2419200
-	ExpiresByType text/html A2419200
-	ExpiresByType application/xhtml+xml A2419200
-	Header unset ETag
-	FileETag None
-	 
-	 # Force no caching for dynamic files
-	<filesMatch "\.(php|cgi|pl|htm)$">
-		ExpiresDefault A0
-		Header set Cache-Control "no-store, no-cache, must-revalidate, max-age=0"
-		Header set Pragma "no-cache"
-	</filesMatch>
-	
-	# Set up caching on media files for 1 month
-	<filesMatch "\.(ico|gif|jpg|jpeg|png|flv|pdf|swf|mov|mp3|wmv|ppt|css)$">
-		ExpiresDefault A2419200
-		Header set Cache-Control "max-age=604800, public"
-		Header set Expires "Thu, 15 Apr 2016 20:00:00 GMT"
-		Header unset ETag
-		FileETag None
-	</filesMatch>
-	 
-	 # Set up caching on media files for 1 month
-	<filesMatch "\.(css)$">
-		ExpiresDefault A2419200
-		Header set Cache-Control "max-age=604800, public"
-		Header set Expires "Thu, 15 Apr 2016 20:00:00 GMT"
-		Header unset ETag
-		FileETag None
-		SetOutputFilter DEFLATE
-		Header unset Last-Modified
-	</filesMatch>
-	
-	# Set up 1 month caching on commonly updated files
-	<filesMatch "\.(json|xml|txt|html|js)$">
-		ExpiresDefault A2419200
-		Header set Cache-Control "max-age=604800, public"
-		Header unset ETag
-		FileETag None
-		SetOutputFilter DEFLATE
-		Header unset Last-Modified
-		#Header set Cache-Control "no-store, no-cache, must-revalidate, max-age=0"
-		#Header set Pragma "no-cache"
-	</filesMatch>
+	<ifModule mod_expires.c>
+		# Turn on Expires and set default expires to 3 days
+		ExpiresActive On
+		ExpiresDefault A259200
+		
+		ExpiresByType application/x-shockwave-flash "access plus 2592000 seconds"
+		ExpiresByType text/css A2419200
+		ExpiresByType text/javascript A2419200
+		ExpiresByType text/json A2419200
+		ExpiresByType application/javascript A2419200
+		ExpiresByType application/x-javascript A2419200
+		ExpiresByType text/html A2419200
+		ExpiresByType application/xhtml+xml A2419200
+		 
+		 # Force no caching for dynamic files
+		<filesMatch "\.(php|cgi|pl|htm)$">
+			ExpiresDefault A0
+			Header set Cache-Control "no-store, no-cache, must-revalidate, max-age=0"
+			Header set Pragma "no-cache"
+		</filesMatch>
+		
+		# Set up caching on media files for 1 month
+		<filesMatch "\.(ico|gif|jpg|jpeg|png|flv|pdf|swf|mov|mp3|wmv|ppt|css)$">
+			ExpiresDefault A2419200
+			Header set Cache-Control "max-age=604800, public"
+			Header set Expires "Thu, 15 Apr 2016 20:00:00 GMT"
+			Header unset ETag
+			FileETag None
+		</filesMatch>
+		 
+		# Set up 1 month caching on commonly updated files
+		<filesMatch "\.(json|xml|txt|html|js)$">
+			ExpiresDefault A2419200
+			Header set Cache-Control "max-age=604800, public"
+			Header unset ETag
+			FileETag None
+			#Header set Cache-Control "no-store, no-cache, must-revalidate, max-age=0"
+			#Header set Pragma "no-cache"
+		</filesMatch>
+	</ifModule>
 </ifModule>
 # END Expire headers
