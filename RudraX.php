@@ -125,10 +125,12 @@ class RudraX {
 			$RDb->close ();
 		}
 		Config::save ();
+		$clientConfig = Config::get("CLIENT_CONST");
 		/*
 		 * $RX_ENCRYPT_PATH is applicable only if either MINFY or MERGE, this variable ise used by .htaccess file
 		 */
-		$RX_ENCRYPT_PATH = ! RX_MODE_DEBUG && ($config ["CLIENT_CONST"] ["RX_JS_MIN"] || $config ["CLIENT_CONST"] ["RX_JS_MERGE"]);
+		$RX_ENCRYPT_PATH = (!RX_MODE_DEBUG) && ($clientConfig["RX_JS_MIN"] || $clientConfig["RX_JS_MERGE"]);
+		Browser::header(RX_MODE_DEBUG.".".$clientConfig["RX_JS_MIN"].".".$clientConfig["RX_JS_MERGE"]);
 		if ($RX_ENCRYPT_PATH) {
 			setcookie ( 'RX-ENCRYPT-PATH', "TRUE", 0, "/" );
 			define("RX_ENCRYPT_PATH", true);
