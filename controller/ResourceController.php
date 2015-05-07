@@ -23,6 +23,17 @@ class ResourceController extends AbstractController {
 	
 	/** Default RudraX Plug
 	 *
+	 * @RequestMapping(url="buildfile/css/{mdfile}")
+	 *
+	 */
+	function buildFile($mdfile,$q){
+		include_once (RUDRA . "/core/model/Header.php");
+		$hdr = new Header();
+		$hdr->printMinifiedCSS(str_replace ( "buildfile/css/", "", $_GET['q']));
+	}
+	
+	/** Default RudraX Plug
+	 *
 	 * @RequestMapping(url="scss/{mdfile}",type=css)
 	 *
 	 */

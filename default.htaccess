@@ -1,5 +1,10 @@
 RewriteEngine On
 
+<IfModule pagespeed_module>
+   ModPagespeed on   
+   # using commands,fileters etc
+</IfModule>
+
 #RewriteCond %{REQUEST_FILENAME} - [F]
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
@@ -12,24 +17,23 @@ RewriteRule ^static/pub/(.*) ../static/pub/$1 [L]
 
 RewriteRule ^resources/bundle.json ../build/resources/bundle.json [L]
 
-RewriteCond %{HTTP_COOKIE} ^.*RX-ENCRYPT-PATH=.*$ [NC]
-RewriteRule ^lib/(.*)\.(css|js)$ ../build/lib/$1.$2 [L]
-
 RewriteCond %{HTTP_COOKIE} ^.*RX-ENCRYPT-PATH=(.*)$ [NC]
-RewriteRule ^resources/(.*)\.(css|js)$ ../build/resources/$1.$2 [L]
+RewriteRule ^(resources|lib)/(.*)\.(css|js)$ ../build/$1/$2.$3 [ENV=BUILDSEARCH:true]
 
-RewriteRule ^lib/(.*)\.(json|css|js|txt|jpeg|jpg|png|gif|eot|svg|ttf|woff|html)$ ../lib/$1.$2 [L]
-RewriteRule ^resources/(.*)\.(json|css|js|txt|jpeg|jpg|png|gif|eot|svg|ttf|woff|html)$ ../resources/$1.$2 [L]
+RewriteCond %{ENV:BUILDSEARCH} ^true$
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^../build/(.*)\.(js|css)/(.*)$ index.php?q=buildfile/$2/$1.$2 [ENV=INDEX:true,L,QSA,S=1]
 
-RewriteRule ^lib/(.*)\.(scss)$ scss/?p=lib/$1.scss
-RewriteRule ^resources/(.*)\.(scss)$ scss/?p=resources/$1.scss
+RewriteRule ^(resources|lib)/(.*)\.(json|css|js|txt|jpeg|jpg|png|gif|eot|svg|ttf|woff|html)$ ../$1/$2.$3 [L]
+
+RewriteRule ^(resources|lib)/(.*)\.(scss)$ scss/?p=$1/$2.scss
 
 RewriteCond %{HTTP_COOKIE} ^.*RX-ENCRYPT-PATH=.*$ [NC]
 RewriteRule ^combinejs/(.*)$ ../build/$1 [ENV=ORIG_URI:$1,ENV=ROUTED:true]
 
 RewriteCond %{ENV:ROUTED} ^true$
 RewriteCond %{REQUEST_FILENAME} !-f
-RewriteRule ^../build/(.*).js/(.*)$ index.php?q=combinejs/$1 [ENV=INDEX:true,L,QSA,S=1]
+RewriteRule ^../build/(.*)\.(js)/(.*)$ index.php?q=combinejs/$1 [ENV=INDEX:true,L,QSA,S=1]
 
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
