@@ -9,13 +9,6 @@ class ResourceHandler extends AbstractHandler {
 
 		$hdr = new Header();
 		
-		//echo "CONT=".CONTEXT_PATH."\n";
-// 		echo "Q=".Q."\n";
-// 		echo "GET_Q=".$_GET["q"]."\n";
-// 		echo "REDIRECT_QUERY_STRING".$_SERVER['REQUEST_URI']."\n";
-// 		echo "ORIG_URI".$_SERVER['ORIG_URI']."\n";
-		
-		
 		$cache_ext  = '.js'; //file extension
 		$cache_time     = 3600;  //Cache file expires afere these seconds (1 hour = 3600 sec)
 		$cache_folder   = Header::$BUILD_PATH; //folder to store Cache files
@@ -95,13 +88,13 @@ class ResourceHandler extends AbstractHandler {
 			// Client's cache IS current, so we just respond '304 Not Modified'.
 			header('Last-Modified: '.gmdate('D, d M Y H:i:s', $fileModTime).' GMT', true, 304);
 			header('HTTP/1.1 304 Not Modified');
-			readfile($graphicFileName);
+			//readfile($graphicFileName);
 		} else {
 			// Image not cached or cache outdated, we respond '200 OK' and output the image.
 			header('Last-Modified: '.gmdate('D, d M Y H:i:s', $fileModTime).' GMT', true, 200);
 			header('Content-type: '.$fileType);
 			header('Content-transfer-encoding: binary');
-			header('Content-length: '.filesize($graphicFileName));
+			//header('Content-length: '.filesize($graphicFileName));
 			header('X-File-Name: '.$graphicFileName);
 			header( 'Cache-Control: max-age=2678400' );
 	
@@ -118,7 +111,7 @@ class ResourceHandler extends AbstractHandler {
 		header('Last-Modified: '.gmdate('D, d M Y H:i:s', $fileModTime).' GMT', true, 200);
 		header('Content-type: '.$fileType);
 		header('Content-transfer-encoding: binary');
-		header('Content-length: '.filesize($fileName));
+		//header('Content-length: '.filesize($fileName));
 		header('X-File-Name: '.$fileName);
 		header( 'Cache-Control: max-age=2678400' );
 	}
