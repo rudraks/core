@@ -7,6 +7,13 @@ include_once (RUDRA_MODEL . "/Header.php");
 class ResourceHandler extends AbstractHandler {
 	public function invokeHandler(){
 
+		//VARIABLES TO DETERMINE RESOURCES
+		//RELOAD_VERSION
+		//RX_ENCRYPT_PATH
+		//$const = Config::getSection("CLIENT_CONST");
+		//$const['RX_JS_MIN']
+		//$const['RX_JS_MERGE']
+		
 		$hdr = new Header();
 		
 		$cache_ext  = '.js'; //file extension

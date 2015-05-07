@@ -126,13 +126,15 @@ class RudraX {
 		}
 		Config::save ();
 		/*
-		 * $RX_ENCRYPT_PATH is applicable only if either MINFY or MERGE
+		 * $RX_ENCRYPT_PATH is applicable only if either MINFY or MERGE, this variable ise used by .htaccess file
 		 */
 		$RX_ENCRYPT_PATH = ! RX_MODE_DEBUG && ($config ["CLIENT_CONST"] ["RX_JS_MIN"] || $config ["CLIENT_CONST"] ["RX_JS_MERGE"]);
 		if ($RX_ENCRYPT_PATH) {
 			setcookie ( 'RX-ENCRYPT-PATH', "TRUE", 0, "/" );
+			define("RX_ENCRYPT_PATH", true);
 		} else {
 			removecookie ( 'RX-ENCRYPT-PATH' );
+			define("RX_ENCRYPT_PATH", false);
 		}
 		$total_time = microtime ( true ) - $start_time;
 		header ( "X-ProcessTime:" . $total_time );
