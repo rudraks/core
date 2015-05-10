@@ -45,8 +45,8 @@ abstract class AbstractController {
 				$headers = explode ( self::$HEADER_GLUE, $headerstr );
 				foreach ( $headers as $header ) {
 					header ( $header );
-					// echo
 				}
+				Browser::header("fromCahce");
 				exit ();
 			} else {
 				// ob_start('ob_gzhandler');

@@ -33,35 +33,45 @@ class Header {
 	public static $modulefiles = null;
 	public static $BUILD_PATH;
 	public static $RX_JS_MIN = false;
-	public static function init() {
+	public static $BUNDLE_PATH = "resources_cache/resources";
+	public static $BUNDLE_FILE = "bundle.json";
+	
+	public static function get_build_file_path(){
+		return (self::$BUNDLE_PATH . "/" . self::$BUNDLE_FILE);
+	}
+	 
+	public static function init($force = FALSE) {
 		Browser::info ( "init" );
 		self::$cache = new RxCache ( "header", true );
 		self::$webmodules = self::$cache->get ( 'webmodules' );
 		self::$modulefiles = self::$cache->get ( 'modulefiles' );
 		
-		if (self::$webmodules == null || (RX_MODE_DEBUG || self::$cache->isEmpty ())) {
-			Browser::warn ( "Scanning All Web Modules" );
-			// READ MODULES
-			self::$webmodules = self::getModuleProperties ( get_include_path () . LIB_PATH, self::$webmodules );
-			self::$webmodules = self::getModuleProperties ( get_include_path () . RESOURCE_PATH, self::$webmodules );
-			
-			self::$cache->set ( 'webmodules', self::$webmodules );
-			
-			// CREATE MODULE FILES
-			self::$modulefiles = array ();
-			$header = new Header ();
-			foreach ( self::$webmodules ['bundles'] as $module => $moduleObject ) {
-				$header->_import ( $module );
-			}
-			$header->minify ();
-			self::$cache->set ( 'modulefiles', self::$modulefiles );
-			self::$cache->save ();
-			
-			FileUtil::mkdir ( "resources" );
-			FileUtil::write ( "resources/bundle.json", json_encode ( Header::getModules () ) );
-			
-			Browser::info ( self::$webmodules, self::$modulefiles );
+		if ($force || self::$webmodules == null || (RX_MODE_DEBUG || self::$cache->isEmpty ())) {
+			self::scan ();
 		}
+	}
+	public static function scan() {
+		Browser::warn ( "Scanning All Web Modules" );
+		// READ MODULES
+		self::$webmodules = self::getModuleProperties ( get_include_path () . LIB_PATH, self::$webmodules );
+		self::$webmodules = self::getModuleProperties ( get_include_path () . RESOURCE_PATH, self::$webmodules );
+		
+		self::$cache->set ( 'webmodules', self::$webmodules );
+		
+		// CREATE MODULE FILES
+		self::$modulefiles = array ();
+		$header = new Header ();
+		foreach ( self::$webmodules ['bundles'] as $module => $moduleObject ) {
+			$header->_import ( $module );
+		}
+		$header->minify ();
+		self::$cache->set ( 'modulefiles', self::$modulefiles );
+		self::$cache->save ();
+		
+		FileUtil::mkdir ( self::$BUILD_PATH );
+		FileUtil::write (self::get_build_file_path(), json_encode ( Header::getModules () ) );
+		
+		Browser::info ( self::$webmodules, self::$modulefiles );
 	}
 	public static function getModule($moduleName) {
 		return isset ( self::$webmodules ['bundles'] [$moduleName] ) ? self::$webmodules ['bundles'] [$moduleName] : FALSE;
@@ -77,7 +87,7 @@ class Header {
 				// 'closure' => true,
 				'gzip' => false 
 		) );
-		self::$BUILD_PATH = get_include_path () . BUILD_PATH . '/';
+		self::$BUILD_PATH = get_include_path () . BUILD_PATH . '/resources_cache/';
 		$this->const = Config::getSection ( "CLIENT_CONST" );
 	}
 	public function title($title) {
@@ -209,23 +219,30 @@ class Header {
 		echo $new_file;
 		readfile ( $filFile );
 	}
-	public function printMinifiedJs($files) {
-		$newfiles = array ();
-		
-		foreach ( $files as $key => $file ) {
-			$new_file = str_replace ( CONTEXT_PATH, "", $file );
-			$newfiles [] = $filFile;
+	public function printMinifiedJs($file, $target = null) {
+		if (! empty ( $file )) {
+			$target = ($target == null) ? str_replace ( CONTEXT_PATH, "", $file ) : $target;
+			$output = get_include_path () . $file;
 			if ($this->const ['RX_JS_MIN']) {
-				Browser::warn ( "minifying...", get_include_path () . $new_file );
-				$filFile = $this->minified->minify ( get_include_path () . $new_file, self::$BUILD_PATH . $new_file );
-				// print_js_comment("-----".get_include_path().$new_file."---".$file."---".$filFile);
-				readfile ( $filFile );
+				// Browser::warn ( "minifying...", get_include_path () . $file );
+				$output = $this->minified->minify ( get_include_path () . $file, self::$BUILD_PATH . $target );
+				// print_r($file);
+				// print_js_comment ( $file,$target, "=".file_exists( get_include_path () .$file) );
+			}
+			if (file_exists ( $output )) {
+				readfile ( $output );
 			} else {
-				readfile ( get_include_path () . $new_file );
+				print_js_comment ( "No File Build", $file, $output );
 			}
 			echo ";";
+		} else {
+			print_js_comment ( "No File Requested" . $file );
 		}
-		return $newfiles;
+	}
+	public function printCombinedJs($files) {
+		foreach ( $files as $key => $file ) {
+			$this->printMinifiedJs ( str_replace ( CONTEXT_PATH, "", $file ) );
+		}
 	}
 	public static function getModuleProperties($dir, $filemodules = array("_" => array(),"bundles" => array())) {
 		if (! is_dir ( $dir )) {

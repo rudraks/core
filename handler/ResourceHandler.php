@@ -20,9 +20,10 @@ class ResourceHandler extends AbstractHandler {
 		$cache_time     = 3600;  //Cache file expires afere these seconds (1 hour = 3600 sec)
 		$cache_folder   = Header::$BUILD_PATH; //folder to store Cache files
 		//$ignore_pages   = array('', '');
-		$dynamic_url    = $_SERVER['QUERY_STRING']; // requested dynamic page (full url)
+		$dynamic_url    = $_GET['@']; //$_SERVER['QUERY_STRING']; // requested dynamic page (full url)
+		$version    = $_GET['_'];
 		//echo "Q==".$_SERVER['QUERY_STRING'];
-		$cache_file     = $cache_folder.md5($dynamic_url).$cache_ext; // construct a cache file
+		$cache_file     = $cache_folder.md5($dynamic_url)."-".$version.$cache_ext; // construct a cache file
 		$ignore = false; //(in_array($dynamic_url,$ignore_pages))?true:false; //check if url is in ignore list
 		
 		Browser::header("RX_MODE_DEBUG".RX_MODE_DEBUG);
@@ -31,10 +32,11 @@ class ResourceHandler extends AbstractHandler {
 			//if (!$ignore && file_exists($cache_file) && time() - $cache_time < filemtime($cache_file)) { //check Cache exist and it's not expired.
 			if (!$ignore && file_exists($cache_file)) { //check Cache exist and it's not expired.
 				ob_start('ob_gzhandler'); //Turn on output buffering, "ob_gzhandler" for the compressed page with gzip.
+				echo '/** cached page - '.date('l jS \of F Y h:i:s A', filemtime($cache_file)).',';
+				echo "\n * Page : ".$dynamic_url."\n * NewMD5".$cache_file."\n */\n";
 				$this->displayResourceFile($cache_file); //read Cache file
 				$this->writeHeaders($cache_file);
 				//$this->redirectFile($cache_file);
-				echo '/* cached page - '.date('l jS \of F Y h:i:s A', filemtime($cache_file)).', Page : '.$dynamic_url.' */';
 				ob_end_flush(); //Flush and turn off output buffering
 				exit(); //no need to proceed further, exit the flow.
 			}
@@ -43,7 +45,7 @@ class ResourceHandler extends AbstractHandler {
 		ob_start('ob_gzhandler');
 		
 		$files = explode(",",$_GET['@']);
-		$newFiles = $hdr->printMinifiedJs($files);
+		$hdr->printCombinedJs($files);
 		
 		if (!is_dir($cache_folder)) { //create a new folder if we need to
 			mkdir($cache_folder);
@@ -91,11 +93,11 @@ class ResourceHandler extends AbstractHandler {
 		$headers = $this->getRequestHeaders();
 		// Checking if the client is validating his cache and if it is current.
 		if (isset($headers['If-Modified-Since']) && (strtotime($headers['If-Modified-Since']) == $fileModTime)) {
-	
 			// Client's cache IS current, so we just respond '304 Not Modified'.
 			header('Last-Modified: '.gmdate('D, d M Y H:i:s', $fileModTime).' GMT', true, 304);
 			header('HTTP/1.1 304 Not Modified');
-			//readfile($graphicFileName);
+			readfile($graphicFileName);
+			//$this->redirectFile($graphicFileName);
 		} else {
 			// Image not cached or cache outdated, we respond '200 OK' and output the image.
 			header('Last-Modified: '.gmdate('D, d M Y H:i:s', $fileModTime).' GMT', true, 200);

@@ -12,7 +12,7 @@ class Console {
 	private static $LOGS = false;
 	private static $LOGS_PATH = false;
 	private $messages = array();
-	private $mtime;
+	public $mtime;
 	public static $log_fun = "console.log";
 
 	public function  __construct(){

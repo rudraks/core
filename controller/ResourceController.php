@@ -17,9 +17,26 @@ class ResourceController extends AbstractController {
 	 */
 	function combineJs(){
 		include_once (RUDRA . "/core/handler/ResourceHandler.php");
+		//echo "Booba";
 		$handler = new ResourceHandler();
 		$handler->invokeHandler();
 	}
+	
+	/** Default RudraX Plug
+	 *
+	 * @RequestMapping(url="buildfile/js/{mdfile}")
+	 *
+	 */
+	function buildJSFile($mdfile,$q){
+		include_once (RUDRA . "/core/model/Header.php");
+		$hdr = new Header(); 
+		$version = "-_".$_REQUEST["_"];
+		$target = str_replace ("buildfile/js/","", $_GET['q']);
+		$source = str_replace ($version,"", $target);
+		print_js_comment($target,$source,$version);
+		$hdr->printMinifiedJs($source, $target);
+	}
+	
 	
 	/** Default RudraX Plug
 	 *
@@ -30,6 +47,17 @@ class ResourceController extends AbstractController {
 		include_once (RUDRA . "/core/model/Header.php");
 		$hdr = new Header();
 		$hdr->printMinifiedCSS(str_replace ( "buildfile/css/", "", $_GET['q']));
+	}
+	
+	/** Default RudraX Plug
+	 *
+	 * @RequestMapping(url="buildfile/json/{version}")
+	 *
+	 */
+	function bundleJson($version){
+		include_once (RUDRA . "/core/model/Header.php");
+		Header::init(true);
+		FileUtil::read(Header::get_build_file_path());
 	}
 	
 	/** Default RudraX Plug
@@ -69,5 +97,26 @@ class ResourceController extends AbstractController {
 		header('Content-type: text/html');
 		header('Cache-Control: no-cache');
 		readfile("../".RUDRA."/core/offline/offline.html");
+	}
+	
+	/** Default RudraX Plug
+	 *
+	 * @RequestMapping(url="offline.js",type=data,cache = true)
+	 *
+	 */
+	function offlineJS($mdfile){
+		header('Content-type: application/javascript');
+		header('Cache-Control: no-cache');
+		readfile("../".RUDRA."/core/offline/offline.js");
+	}
+	/** Default RudraX Plug
+	 *
+	 * @RequestMapping(url="offline.css",type=data,cache = true)
+	 *
+	 */
+	function offlineCSS($mdfile){
+		header('Content-type: text/css');
+		header('Cache-Control: no-cache');
+		readfile("../".RUDRA."/core/offline/offline.css");
 	}
 }

@@ -1,5 +1,7 @@
 CACHE MANIFEST
+
 FALLBACK:
+*.js /offline.js
+*.css /offline.css
+*.scss /offline.css
 / /offline.html
-NETWORK:
-*

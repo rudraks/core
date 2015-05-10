@@ -24,10 +24,6 @@ class RudraX {
 			self::$websitecache = new RxCache ( 'rudrax' );
 		return self::$websitecache;
 	}
-	public static function getDB($configname) {
-		include_once ("db/AbstractDb.php");
-		return new AbstractDb ( Config::get ( $configname ) );
-	}
 	public static $url_callback = null;
 	public static $url_size = 0;
 	public static $url_varmap = null;
@@ -92,7 +88,7 @@ class RudraX {
 		);
 	}
 	public static function invoke($_conf = array()) {
-		$start_time = microtime ( true );
+		Browser::time ( "invoked" );
 		$global_config = array_merge ( array (
 				'CONTROLLER' => 'web.php',
 				'DEFAULT_DB' => 'DB1',
@@ -106,13 +102,19 @@ class RudraX {
 		Config::load ( "../app/meta/project.properties", "../config/project.properties", $global_config );
 		// Initialze Rudrax
 		self::init ();
+		Browser::time ( "After Init" );
 		global $RDb;
 		$config = Config::getSection ( "GLOBAL" );
 		$db_connect = false;
-		if (isset ( $config ["DEFAULT_DB"] )) {
-			$RDb = self::getDB ( $config ["DEFAULT_DB"] );
-			$db_connect = true;
-		}
+		Browser::time ( "Before DB Connect" );
+		/**
+		 * NOTE:- NO need to connect DB automatically, it should be connecte donly when required;
+		 */
+// 		if (isset ( $config ["DEFAULT_DB"] )) {
+// 			$RDb = self::getDB ( $config ["DEFAULT_DB"] );
+// 			$db_connect = true;
+// 		}
+		Browser::time ( "Before-First Reload" );
 		// Define Custom Request Plugs
 		if (FIRST_RELOAD) {
 			ClassUtil::scan ();
@@ -121,25 +123,25 @@ class RudraX {
 		self::findAndExecuteController ();
 		
 		self::invokeController ();
-		if ($db_connect) {
-			$RDb->close ();
-		}
+		DBService::close();
+		
+		Browser::time ( "Before Saving" );
 		Config::save ();
-		$clientConfig = Config::get("CLIENT_CONST");
+		Browser::time ( "After Saving" );
+		$clientConfig = Config::get ( "CLIENT_CONST" );
 		/*
 		 * $RX_ENCRYPT_PATH is applicable only if either MINFY or MERGE, this variable ise used by .htaccess file
 		 */
-		$RX_ENCRYPT_PATH = (!RX_MODE_DEBUG) && ($clientConfig["RX_JS_MIN"] || $clientConfig["RX_JS_MERGE"]);
-		Browser::header(RX_MODE_DEBUG.".".$clientConfig["RX_JS_MIN"].".".$clientConfig["RX_JS_MERGE"]);
+		$RX_ENCRYPT_PATH = (! RX_MODE_DEBUG) && ($clientConfig ["RX_JS_MIN"] || $clientConfig ["RX_JS_MERGE"]);
+		Browser::header ( RX_MODE_DEBUG . "." . $clientConfig ["RX_JS_MIN"] . "." . $clientConfig ["RX_JS_MERGE"] );
 		if ($RX_ENCRYPT_PATH) {
 			setcookie ( 'RX-ENCRYPT-PATH', "TRUE", 0, "/" );
-			define("RX_ENCRYPT_PATH", true);
+			define ( "RX_ENCRYPT_PATH", true );
 		} else {
 			removecookie ( 'RX-ENCRYPT-PATH' );
-			define("RX_ENCRYPT_PATH", false);
+			define ( "RX_ENCRYPT_PATH", false );
 		}
-		$total_time = microtime ( true ) - $start_time;
-		header ( "X-ProcessTime:" . $total_time );
+		Browser::time ( "Invoked:Ends" );
 	}
 }
 class DBUtils {
@@ -152,8 +154,9 @@ class Config {
 	public static function get($section, $prop = NULL) {
 		if (isset ( $GLOBALS ['CONFIG'] [$section] )) {
 			return $GLOBALS ['CONFIG'] [$section];
-		} else
+		} else {
 			return defined ( $section ) ? constant ( $section ) : FALSE;
+		}
 	}
 	
 	// CACHE MAINTAIN
@@ -162,6 +165,15 @@ class Config {
 	}
 	public static function getSection($key) {
 		return self::$cache->get ( $key );
+	}
+	public static function getProperty($section, $property) {
+		$section = self::$cache->get ( $key );
+		if ($property == null) {
+			return $section;
+		} else if ($section != null && isset ( $section [$property] )) {
+			return $section [$property];
+		}
+		return null;
 	}
 	public static function hasValue($key) {
 		return self::$cache->hasKey ( $key );
@@ -219,17 +231,26 @@ class Config {
 		define ( "BASE_PATH", dirname ( __FILE__ ) );
 		
 		// print_r($GLOBALS ['CONFIG']['GLOBAL']);
-		$header_flags = "FIRST_RELOAD=" . FIRST_RELOAD;
 		foreach ( $GLOBALS ['CONFIG'] ['GLOBAL'] as $key => $value ) {
 			define ( $key, $value );
-			$header_flags .= (";" . $key . "=" . $value);
 		}
-		header ( "X-FLAGS: " . $header_flags );
 		
 		define ( 'Q', (isset ( $_REQUEST ['q'] ) ? $_REQUEST ['q'] : NULL) );
 		
 		$path_info = pathinfo ( $_SERVER ['PHP_SELF'] );
 		$CONTEXT_PATH = ((Q == NULL) ? strstr ( $_SERVER ['PHP_SELF'], $path_info ['basename'], TRUE ) : strstr ( $_SERVER ['REQUEST_URI'], Q, true ));
+		/**
+		 * TODO:- Fix it wth better solution
+		 */
+		if ($CONTEXT_PATH == null) {
+			$CONTEXT_PATH = str_replace ( $path_info ['basename'], "", $_SERVER ['PHP_SELF'] );
+		}
+		
+		// Browser::header("Q=".$_REQUEST ['q']);
+		// Browser::header("CONTEXT_PATH==".$CONTEXT_PATH);
+		// Browser::header("PHP_SELF==".$_SERVER ['PHP_SELF']);
+		// Browser::header("basename==".$path_info ['basename']);
+		// Browser::header("REQUEST_URI==".$_SERVER ['REQUEST_URI']);
 		
 		// echo "CONTEXT_PATH::".Q;
 		define ( 'CONTEXT_PATH', $CONTEXT_PATH );
@@ -243,6 +264,7 @@ class Config {
 class Browser {
 	private static $console;
 	private static $messageCounter = 0;
+	private static $timeCounter;
 	public static function init() {
 		self::$console = new Console ();
 	}
@@ -266,6 +288,13 @@ class Browser {
 	}
 	public static function header($total_time) {
 		header ( "X-LOG-" . (++ self::$messageCounter) . ": " . $total_time );
+	}
+	public static function time($msg) {
+		if (self::$timeCounter == null) {
+			self::$timeCounter = microtime ( true );
+		}
+		header ( "X-LOG-TIME-" . (++ self::$messageCounter) . ": " . "[" . (microtime ( true ) - self::$timeCounter) . "] " . $msg );
+		self::$timeCounter = microtime ( true );
 	}
 	private static function logMessage($args, $trace, $logType) {
 		$msgData = "";
@@ -301,6 +330,9 @@ class FileUtil {
 	public static function write($file, $content) {
 		return file_put_contents ( "../build/" . $file, $content );
 	}
+	public static function read($file) {
+		return readfile ( "../build/" . $file );
+	}
 	public static function mkdir($dirName, $rights = 0777) {
 		$dirs = explode ( '/', "../build/" . $dirName );
 		$dir = '';
@@ -315,4 +347,29 @@ class FileUtil {
 		return true;
 	}
 }
+class DBService {
+	public static $connected = false;
+	public static $map = array ();
+	public static $defaultDb = null;
+	public static function getDB() {
+		if (self::$defaultDb == null) {
+			self::$defaultDb = self::initDB ( Config::getProperty ( "GLOBAL", "DEFAULT_DB" ) );
+		}
+		return self::$defaultDb;
+	}
+	public static function close($configname = NULL) {
+		if ($configname == NULL && self::$defaultDb != null) {
+			self::$defaultDb->close ();
+		}
+	}
+	public static function initDB($configname) {
+		if (! self::$connected) {
+			include_once ("db/AbstractDb.php");
+			self::$connected = true;
+		}
+		self::$map [$configname] = new AbstractDb ( Config::getSection ( $configname ) );
+		return self::$map [$configname];
+	}
+}
+
 ?>

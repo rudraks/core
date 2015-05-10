@@ -13,7 +13,11 @@ function replace_first($search, $replace = "", $subject = "") {
 	return $newstring;
 }
 function print_js_comment($str) {
-	echo "/*  " . $str . " */";
+	echo "/*  ";
+	foreach (func_get_args() as $ar){
+	 echo  "\n* ".$ar ;
+	}
+	echo " */";
 }
 function print_line($str) {
 	echo "<br/>  " . $str;
