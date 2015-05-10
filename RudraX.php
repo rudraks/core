@@ -215,6 +215,10 @@ class Config {
 			self::$cache->merge ( $localConfig );
 			self::$cache->set ( 'GLOBAL', array_merge ( $DEFAULT_CONFIG ['GLOBAL'], $localConfig ['GLOBAL'], $glob_config ) );
 			
+			$reloadMode = isset($_GET ['ModPagespeed']) ? $_GET ['ModPagespeed'] : NULL;
+			
+			call_user_func ( rx_function ( "rx_reload_cache" ),$reloadMode);
+			
 			self::$cache->save ();
 		} else {
 			define ( "FIRST_RELOAD", FALSE );
