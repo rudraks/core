@@ -7,5 +7,6 @@
  * @param String $handlerName
  */
 function rx_reload_cache() {
-		
+	$headerCache =  new RxCache ( "header", true );
+	$headerCache->clear();
 }
