@@ -8,7 +8,7 @@ require_once "Console.php";
 // include_once ("model/AbstractRequest.php");
 include_once ("model/RxCache.php");
 include_once ("ClassUtil.php");
-global $RDb;
+
 class RudraX {
 	public static $websitecache;
 	public static $REQUEST_MAPPED = FALSE;
@@ -103,7 +103,7 @@ class RudraX {
 		// Initialze Rudrax
 		self::init ();
 		Browser::time ( "After Init" );
-		global $RDb;
+
 		$config = Config::getSection ( "GLOBAL" );
 		$db_connect = false;
 		Browser::time ( "Before DB Connect" );
@@ -144,11 +144,7 @@ class RudraX {
 		Browser::time ( "Invoked:Ends" );
 	}
 }
-class DBUtils {
-	public static function getDB($configname) {
-		return RudraX::getDB ( $configname );
-	}
-}
+
 class Config {
 	public static $cache;
 	public static function get($section, $prop = NULL) {
@@ -167,11 +163,11 @@ class Config {
 		return self::$cache->get ( $key );
 	}
 	public static function getProperty($section, $property) {
-		$section = self::$cache->get ( $key );
+		$sectionData = self::$cache->get ( $section );
 		if ($property == null) {
-			return $section;
-		} else if ($section != null && isset ( $section [$property] )) {
-			return $section [$property];
+			return $sectionData;
+		} else if ($sectionData != null && isset ( $sectionData [$property] )) {
+			return $sectionData [$property];
 		}
 		return null;
 	}
@@ -351,10 +347,12 @@ class FileUtil {
 		return true;
 	}
 }
+
 class DBService {
 	public static $connected = false;
 	public static $map = array ();
 	public static $defaultDb = null;
+
 	public static function getDB() {
 		if (self::$defaultDb == null) {
 			self::$defaultDb = self::initDB ( Config::getProperty ( "GLOBAL", "DEFAULT_DB" ) );
