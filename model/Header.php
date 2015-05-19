@@ -213,11 +213,25 @@ class Header {
 			}
 		}
 	}
-	public function printMinifiedCSS($file) {
-		$new_file = str_replace ( CONTEXT_PATH, "", $file );
-		$filFile = $this->minified->minify ( get_include_path () . $new_file, self::$BUILD_PATH . $new_file );
-		echo $new_file;
-		readfile ( $filFile );
+	public function printMinifiedCSS($file, $target = null) {
+		//$new_file = str_replace ( CONTEXT_PATH, "", $file );
+		//$filFile = $this->minified->minify ( get_include_path () . $new_file, self::$BUILD_PATH . $new_file );
+		//echo $new_file;
+		//readfile ( $filFile );
+		
+		if (! empty ( $file )) {
+			$target = ($target == null) ? str_replace ( CONTEXT_PATH, "", $file ) : $target;
+			$output = get_include_path () . $file;
+			$output = $this->minified->minify ( get_include_path () . $file, self::$BUILD_PATH . $target );
+			if (file_exists ( $output )) {
+				readfile ( $output );
+			} else {
+				print_js_comment ( "No File Build", $file, $output );
+			}
+			echo ";";
+		} else {
+			print_js_comment ( "No File Requested" . $file );
+		}
 	}
 	public function printMinifiedJs($file, $target = null) {
 		if (! empty ( $file )) {

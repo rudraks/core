@@ -46,7 +46,11 @@ class ResourceController extends AbstractController {
 	function buildFile($mdfile,$q){
 		include_once (RUDRA . "/core/model/Header.php");
 		$hdr = new Header();
-		$hdr->printMinifiedCSS(str_replace ( "buildfile/css/", "", $_GET['q']));
+		$version = "-_".$_REQUEST["_"];
+		$target = str_replace ("buildfile/css/","", $_GET['q']);
+		$source = str_replace ($version,"", $target);
+		print_js_comment($target,$source,$version);
+		$hdr->printMinifiedCSS($source, $target);
 	}
 	
 	/** Default RudraX Plug
