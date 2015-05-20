@@ -32,7 +32,18 @@ function resolve_path($str) {
 				// Don't need to do anything here
 				break;
 			case '..' :
-				array_pop ( $parents );
+				$popped = array_pop ( $parents );
+				if(empty($popped)){
+					//Its meaningful, cant afford to loose it
+					$parents [] = $dir;
+				} else if($popped == ".."){
+					//Sorry, will have to put it back
+					$parents [] = $popped;
+					$parents [] = $dir;
+				}
+				break;
+			case "" :
+				//Some stupid guy didn't do his job :P
 				break;
 			default :
 				$parents [] = $dir;
@@ -41,6 +52,7 @@ function resolve_path($str) {
 	}
 	return $domain . '/' . implode ( '/', $parents );
 }
+
 function rx_function($callback) {
 	include_once 'functions/' . $callback . ".php";
 	return $callback;

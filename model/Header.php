@@ -288,7 +288,7 @@ class Header {
 										$filemodules ['bundles'] [$mod] [$key] = explode ( ',', $file );
 									} else if ($key != '@' && ! is_remote_file ( $file )) {
 										// Browser::log("****",resolve_path($dir."/".$file),"***");
-										$filemodules ['bundles'] [$mod] ["files"] [] = replace_first ( get_include_path (), "", $dir . '/' . $file );
+										$filemodules ['bundles'] [$mod] ["files"] [] = resolve_path(replace_first ( get_include_path (), "", $dir . '/' . $file ));
 										// $filemodules['bundles'][$mod]["files"][] = self::resolve_path("/resou/".$dir.'/'.$file);
 									} else
 										$filemodules ['bundles'] [$mod] ["files"] [] = $file;
