@@ -36,7 +36,7 @@ class Header {
 	public static $BUNDLE_PATH = "resources_cache/resources";
 	public static $BUNDLE_FILE = "bundle.json";
 	
-	public static function get_build_file_path(){
+	public static function get_bundle_file_path(){
 		return (self::$BUNDLE_PATH . "/" . self::$BUNDLE_FILE);
 	}
 	 
@@ -68,8 +68,8 @@ class Header {
 		self::$cache->set ( 'modulefiles', self::$modulefiles );
 		self::$cache->save ();
 		
-		FileUtil::mkdir ( self::$BUILD_PATH );
-		FileUtil::write (self::get_build_file_path(), json_encode ( Header::getModules () ) );
+		FileUtil::mkdir ( self::$BUNDLE_PATH );
+		FileUtil::write (self::get_bundle_file_path(), json_encode ( Header::getModules () ) );
 		
 		Browser::info ( self::$webmodules, self::$modulefiles );
 	}
