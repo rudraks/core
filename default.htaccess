@@ -30,9 +30,13 @@ RewriteCond %{ENV:ROUTED} ^true$
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteRule ^../build/resources_cache/(.*)\.(css|js)/(.*)$ index.php?q=combinejs/$1 [ENV=INDEX:true,L,QSA,S=1]
 
-RewriteRule ^(resources|lib)/(.*)\.(json|css|js|txt|jpeg|jpg|png|gif|eot|svg|ttf|woff|html|css.map)$ ../$1/$2.$3 [L]
+RewriteRule ^(resources|lib)/(.*)\.(json|css|js|txt|jpeg|jpg|png|gif|eot|svg|ttf|woff|html|css.map|md)$ ../$1/$2.$3 [L]
 
-RewriteRule ^(resources|lib)/(.*)\.(scss)$ scss/?p=$1/$2.scss [L]
+#RewriteRule ^(resources|lib)/(.*)\.(scss)$ scss/?p=$1/$2.scss [L]
+RewriteRule ^(resources|lib)/(.*)\.(scss)$ ../build/resources_cache/$1/$2.css
+
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^../build/resources_cache/(.*)\.(css)/(.*)$ scss/?p=$1.scss [L]
 
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
