@@ -177,7 +177,7 @@ class Header {
 				if ($fileObj ["remote"]) {
 					$this->makeMD5Entry ( $param );
 					$param = "";
-					$this->scripts_bundle [$fileObj ['link']] = $fileObj ['link'];
+					$this->scripts_bundle [$fileObj ['link']] = $fileObj;
 				} else {
 					$param = $param . $fileObj ['link'] . ",";
 				}
@@ -187,7 +187,7 @@ class Header {
 	}
 	public function makeMD5Entry($param) {
 		$fileName = md5 ( $param ) . ".js";
-		$this->scripts_bundle [$fileName] = CONTEXT_PATH . "combinejs/" . $fileName . "?@=" . $param;
+		$this->scripts_bundle [$fileName] = array( "link" => (CONTEXT_PATH . "combinejs/" . $fileName . "?@=" . $param));
 	}
 	public function minify() {
 		if (RX_MODE_DEBUG || self::$cache->isEmpty ()) {
