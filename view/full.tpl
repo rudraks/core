@@ -42,7 +42,7 @@ window.applicationCache.update()
 
 {if $header->const.RX_JS_MERGE}
    	{foreach $header->scripts_bundle as $file}
-		<script name="{$file@key}"src="{$file}?&_={$smarty.const.RELOAD_VERSION}" type="text/javascript"></script>
+		<script name="{$file@key}"src="{$file}&_={$smarty.const.RELOAD_VERSION}" type="text/javascript"></script>
    	{/foreach}
 {else}
    	{foreach $header->scripts as $src}
