@@ -69,7 +69,7 @@ window.applicationCache.update()
 }
 </style>
 <div class="rx_debuggger" style="">
-<a href="?ModPagespeed=off">@RELOAD</a>
+	<a href="?ModPagespeed=off&_={$smarty.const.RELOAD_VERSION}">@RELOAD</a>
 </div>
 {/if}
 
