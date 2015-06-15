@@ -61,9 +61,13 @@ class Header {
 		// CREATE MODULE FILES
 		self::$modulefiles = array ();
 		$header = new Header ();
-		foreach ( self::$webmodules ['bundles'] as $module => $moduleObject ) {
-			$header->_import ( $module );
+		
+		if(!empty(self::$webmodules ['bundles'])){
+			foreach ( self::$webmodules ['bundles'] as $module => $moduleObject ) {
+				$header->_import ( $module );
+			}	
 		}
+		
 		$header->minify ();
 		self::$cache->set ( 'modulefiles', self::$modulefiles );
 		self::$cache->save ();

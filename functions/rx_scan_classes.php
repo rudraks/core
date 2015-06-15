@@ -41,7 +41,7 @@ function rx_scan_dir ($annotations,$dir){
 				if( ClassUtil::getMTime($className)>=$file->getMTime()){
 					$scan = false;
 				}
-				if($scan){
+				if($scan && class_exists($className)){
 					$result = $annotations->getClassAnnotations($className);
 					if(isset($result["Handler"]) && isset($result["Handler"][0]) && !empty($result["Handler"][0])){
 						ClassUtil::setHandler($result["Handler"][0], array(
@@ -62,7 +62,7 @@ function rx_scan_dir ($annotations,$dir){
 				if(ClassUtil::getMTime($className)>=$file->getMTime()){
 					$scan = false;
 				}
-				if($scan){
+				if($scan && class_exists($className)){
 					$methods = get_class_methods($className);
 					foreach ($methods as $method){
 						$result = $annotations->getMethodAnnotations($className,$method);
@@ -93,7 +93,7 @@ function rx_scan_dir ($annotations,$dir){
 					$scan = false;
 				}
 	
-				if($scan){
+				if($scan && class_exists($className)){
 					$result = $annotations->getClassAnnotations($className);
 					if(isset($result["Model"]) && isset($result["Model"][0]) && !empty($result["Model"][0])){
 						ClassUtil::setModel($result["Model"][0], array(
