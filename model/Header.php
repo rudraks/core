@@ -174,8 +174,9 @@ class Header {
 	public function combine() {
 		$count = count ( $this->scripts );
 		$this->scripts_bundle = array ();
-		for($i = 0; $i < $count; $i += 5) {
-			$slice = (array_slice ( $this->scripts, $i, 5 ));
+		$limit = intval($this->const['RX_JS_MERGE_COUNT']);
+		for($i = 0; $i < $count; $i += $limit) {
+			$slice = (array_slice ( $this->scripts, $i, $limit ));
 			$param = "";
 			foreach ( $slice as $fileObj ) {
 				if ($fileObj ["remote"]) {
