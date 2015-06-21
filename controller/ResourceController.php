@@ -50,7 +50,11 @@ class ResourceController extends AbstractController {
 		$target = str_replace ("buildfile/css/","", $_GET['q']);
 		$source = str_replace ($version,"", $target);
 		print_js_comment($target,$source,$version);
-		$hdr->printMinifiedCSS($source, $target);
+		if(!$hdr->printMinifiedCSS($source, $target) && ENABLE_SCSS_PHP){
+			header('HTTP/1.1 301 Moved Permanently');
+			header('Location: '.CONTEXT_PATH.str_replace(".css", ".scss", $source)."?_=".RELOAD_VERSION);
+		}
+		
 	}
 	
 	/** Default RudraX Plug

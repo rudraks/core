@@ -212,7 +212,14 @@ class Header {
 					$newName = self::$BUILD_PATH . $value ["file"];
 					$this->css [$key] ["exists"] = file_exists ( $value ["file"] );
 					$this->css [$key] ["build_path"] = $newName;
-					$this->css [$key] ["minified"] = $this->minified->minify ( get_include_path () . $value ["file"], $newName );
+					
+					$inputFile = get_include_path () . $value ["file"];
+					$inputFileExists = file_exists($inputFile);
+					if($inputFileExists){
+						$this->css [$key] ["minified"] = $this->minified->minify ( $inputFile, $newName );
+					} else {
+						$this->css [$key] ["minified"] = $newName;
+					}
 					$this->css [$key] ["link"] = CONTEXT_PATH . str_replace ( self::$BUILD_PATH, "", $this->css [$key] ["minified"] );
 				}
 			}
@@ -227,7 +234,11 @@ class Header {
 		if (! empty ( $file )) {
 			$target = ($target == null) ? str_replace ( CONTEXT_PATH, "", $file ) : $target;
 			$output = get_include_path () . $file;
-			$output = $this->minified->minify ( get_include_path () . $file, self::$BUILD_PATH . $target );
+			$inputFile = get_include_path () . $file;
+			$inputFileExists = file_exists($inputFile);
+			if($inputFileExists){
+				$output = $this->minified->minify ( $inputFile, self::$BUILD_PATH . $target );
+			}
 			if (file_exists ( $output )) {
 				readfile ( $output );
 			} else {
@@ -237,6 +248,7 @@ class Header {
 		} else {
 			print_js_comment ( "No File Requested" . $file );
 		}
+		return file_exists($inputFile);
 	}
 	public function printMinifiedJs($file, $target = null) {
 		if (! empty ( $file )) {
