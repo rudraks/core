@@ -93,7 +93,7 @@ class RudraX {
 				'DEFAULT_DB' => 'DB1',
 				'CONSOLE_FUN' => 'console.log',
 				'RX_MODE_DEBUG' => FALSE,
-				'PROJECT_ROOT_PATH' => "../" 
+				'PROJECT_ROOT_DIR' => "../" 
 		), $_conf );
 		// Loads all the Constants
 		define ( 'PROJECT_ROOT_DIR', $global_config ['PROJECT_ROOT_DIR'] );
@@ -328,7 +328,6 @@ class FileUtil {
 		foreach ( $dirs as $part ) {
 			$dir .= $part . '/';
 			if (! is_dir ( $dir ) && strlen ( $dir ) > 0) {
-				echo "TRYEING--".$dir."==";
 				if (! mkdir ( $dir, $rights )) {
 					return false;
 				}
