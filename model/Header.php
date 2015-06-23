@@ -53,8 +53,8 @@ class Header {
 	public static function scan() {
 		Browser::warn ( "Scanning All Web Modules" );
 		// READ MODULES
-		self::$webmodules = self::getModuleProperties ( get_include_path () . LIB_PATH, self::$webmodules );
-		self::$webmodules = self::getModuleProperties ( get_include_path () . RESOURCE_PATH, self::$webmodules );
+		self::$webmodules = self::getModuleProperties (LIB_PATH, self::$webmodules );
+		self::$webmodules = self::getModuleProperties (RESOURCE_PATH, self::$webmodules );
 		
 		self::$cache->set ( 'webmodules', self::$webmodules );
 		
@@ -91,7 +91,7 @@ class Header {
 				// 'closure' => true,
 				'gzip' => false 
 		) );
-		self::$BUILD_PATH = get_include_path () . BUILD_PATH . '/resources_cache/';
+		self::$BUILD_PATH = BUILD_PATH . 'resources_cache/';
 		$this->const = Config::getSection ( "CLIENT_CONST" );
 	}
 	public function title($title) {
@@ -199,21 +199,21 @@ class Header {
 			foreach ( $this->scripts as $key => $value ) {
 				if ($this->const ['RX_JS_MIN'] && ! $this->scripts [$key] ["remote"]) {
 					$newName = self::$BUILD_PATH . $value ["file"];
-					$this->scripts [$key] ["exists"] = file_exists ( get_include_path () . $value ["file"] );
+					$this->scripts [$key] ["exists"] = file_exists ( PROJECT_ROOT_DIR . $value ["file"] );
 					$this->scripts [$key] ["build_path"] = $newName;
-					$this->scripts [$key] ["minified"] = $this->minified->minify ( get_include_path () . $value ["file"], $newName );
+					$this->scripts [$key] ["minified"] = $this->minified->minify ( PROJECT_ROOT_DIR . $value ["file"], $newName );
 					$this->scripts [$key] ["link"] = CONTEXT_PATH . str_replace ( self::$BUILD_PATH, "", $this->scripts [$key] ["minified"] );
 				}
 			}
 			
 			foreach ( $this->css as $key => $value ) {
 				if ($this->const ['RX_JS_MIN'] && ! $this->css [$key] ["remote"]) {
-					Browser::warn ( "minifying...", $this->css [$key] ["minified"], file_exists ( get_include_path () . $value ["file"] ), $value ["file"] );
+					Browser::warn ( "minifying...", $this->css [$key] ["minified"], file_exists ( PROJECT_ROOT_DIR . $value ["file"] ), $value ["file"] );
 					$newName = self::$BUILD_PATH . $value ["file"];
 					$this->css [$key] ["exists"] = file_exists ( $value ["file"] );
 					$this->css [$key] ["build_path"] = $newName;
 					
-					$inputFile = get_include_path () . $value ["file"];
+					$inputFile = PROJECT_ROOT_DIR . $value ["file"];
 					$inputFileExists = file_exists($inputFile);
 					if($inputFileExists){
 						$this->css [$key] ["minified"] = $this->minified->minify ( $inputFile, $newName );
@@ -227,14 +227,14 @@ class Header {
 	}
 	public function printMinifiedCSS($file, $target = null) {
 		//$new_file = str_replace ( CONTEXT_PATH, "", $file );
-		//$filFile = $this->minified->minify ( get_include_path () . $new_file, self::$BUILD_PATH . $new_file );
+		//$filFile = $this->minified->minify ( PROJECT_ROOT_DIR . $new_file, self::$BUILD_PATH . $new_file );
 		//echo $new_file;
 		//readfile ( $filFile );
 		
 		if (! empty ( $file )) {
 			$target = ($target == null) ? str_replace ( CONTEXT_PATH, "", $file ) : $target;
-			$output = get_include_path () . $file;
-			$inputFile = get_include_path () . $file;
+			$output = PROJECT_ROOT_DIR . $file;
+			$inputFile = PROJECT_ROOT_DIR . $file;
 			$inputFileExists = file_exists($inputFile);
 			if($inputFileExists){
 				$output = $this->minified->minify ( $inputFile, self::$BUILD_PATH . $target );
@@ -253,12 +253,12 @@ class Header {
 	public function printMinifiedJs($file, $target = null) {
 		if (! empty ( $file )) {
 			$target = ($target == null) ? str_replace ( CONTEXT_PATH, "", $file ) : $target;
-			$output = get_include_path () . $file;
+			$output = PROJECT_ROOT_DIR . $file;
 			if ($this->const ['RX_JS_MIN']) {
-				// Browser::warn ( "minifying...", get_include_path () . $file );
-				$output = $this->minified->minify ( get_include_path () . $file, self::$BUILD_PATH . $target );
+				// Browser::warn ( "minifying...", PROJECT_ROOT_DIR . $file );
+				$output = $this->minified->minify (PROJECT_ROOT_DIR.$file, self::$BUILD_PATH . $target );
 				// print_r($file);
-				// print_js_comment ( $file,$target, "=".file_exists( get_include_path () .$file) );
+				// print_js_comment ( $file,$target, "=".file_exists( PROJECT_ROOT_DIR .$file) );
 			}
 			if (file_exists ( $output )) {
 				readfile ( $output );
@@ -305,7 +305,9 @@ class Header {
 										$filemodules ['bundles'] [$mod] [$key] = explode ( ',', $file );
 									} else if ($key != '@' && ! is_remote_file ( $file )) {
 										// Browser::log("****",resolve_path($dir."/".$file),"***");
-										$filemodules ['bundles'] [$mod] ["files"] [] = resolve_path(replace_first ( get_include_path (), "", $dir . '/' . $file ));
+										$file_path = resolve_path(replace_first ( PROJECT_ROOT_DIR, "", $dir . '/' . $file ));
+										$filemodules ['bundles'] [$mod] ["files"] [] = $file_path;
+										//echo $file_path."scanning</br>";
 										// $filemodules['bundles'][$mod]["files"][] = self::resolve_path("/resou/".$dir.'/'.$file);
 									} else
 										$filemodules ['bundles'] [$mod] ["files"] [] = $file;

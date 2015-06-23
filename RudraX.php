@@ -8,7 +8,6 @@ require_once "Console.php";
 // include_once ("model/AbstractRequest.php");
 include_once ("model/RxCache.php");
 include_once ("ClassUtil.php");
-
 class RudraX {
 	public static $websitecache;
 	public static $REQUEST_MAPPED = FALSE;
@@ -93,27 +92,31 @@ class RudraX {
 				'CONTROLLER' => 'web.php',
 				'DEFAULT_DB' => 'DB1',
 				'CONSOLE_FUN' => 'console.log',
-				'RX_MODE_DEBUG' => FALSE 
+				'RX_MODE_DEBUG' => FALSE,
+				'PROJECT_ROOT_PATH' => "../" 
 		), $_conf );
 		// Loads all the Constants
+		define ( 'PROJECT_ROOT_DIR', $global_config ['PROJECT_ROOT_DIR'] );
+		define ( 'PROJECT_ID', md5(PROJECT_ROOT_DIR.$global_config ['CONTROLLER']));
+		include_once 'constants.php';
 		ob_start ();
 		
 		session_start ();
-		Config::load ( "../app/meta/project.properties", "../config/project.properties", $global_config );
+		Config::load ( PROJECT_ROOT_DIR . "app/meta/project.properties", PROJECT_ROOT_DIR . "config/project.properties", $global_config );
 		// Initialze Rudrax
 		self::init ();
 		Browser::time ( "After Init" );
-
+		
 		$config = Config::getSection ( "GLOBAL" );
 		$db_connect = false;
 		Browser::time ( "Before DB Connect" );
 		/**
 		 * NOTE:- NO need to connect DB automatically, it should be connecte donly when required;
 		 */
-// 		if (isset ( $config ["DEFAULT_DB"] )) {
-// 			$RDb = self::getDB ( $config ["DEFAULT_DB"] );
-// 			$db_connect = true;
-// 		}
+		// if (isset ( $config ["DEFAULT_DB"] )) {
+		// $RDb = self::getDB ( $config ["DEFAULT_DB"] );
+		// $db_connect = true;
+		// }
 		Browser::time ( "Before-First Reload" );
 		// Define Custom Request Plugs
 		if (FIRST_RELOAD) {
@@ -123,7 +126,7 @@ class RudraX {
 		self::findAndExecuteController ();
 		
 		self::invokeController ();
-		DBService::close();
+		DBService::close ();
 		
 		Browser::time ( "Before Saving" );
 		Config::save ();
@@ -144,7 +147,6 @@ class RudraX {
 		Browser::time ( "Invoked:Ends" );
 	}
 }
-
 class Config {
 	public static $cache;
 	public static function get($section, $prop = NULL) {
@@ -174,10 +176,32 @@ class Config {
 	public static function hasValue($key) {
 		return self::$cache->hasKey ( $key );
 	}
+
+	public static function load($file, $file2 = null, $glob_config = array()) {
+		$GLOBALS ['CONFIG'] = self::read ( $glob_config, $file, $file2 );
+		
+		// print_r($GLOBALS ['CONFIG']['GLOBAL']);
+		define_globals($GLOBALS ['CONFIG'] ['GLOBAL']);
+		
+		define ( 'Q', (isset ( $_REQUEST ['q'] ) ? $_REQUEST ['q'] : NULL) );
+		
+		$path_info = pathinfo ( $_SERVER ['PHP_SELF'] );
+		$CONTEXT_PATH = ((Q == NULL) ? strstr ( $_SERVER ['PHP_SELF'], $path_info ['basename'], TRUE ) : strstr ( $_SERVER ['REQUEST_URI'], Q, true ));
+		/**
+		 * TODO:- Fix it wth better solution
+		 */
+		if ($CONTEXT_PATH == null) {
+			$CONTEXT_PATH = str_replace ( $path_info ['basename'], "", $_SERVER ['PHP_SELF'] );
+		}
+		
+		define ( 'CONTEXT_PATH', $CONTEXT_PATH );
+		define ( 'APP_CONTEXT', resolve_path ( $CONTEXT_PATH . (get_include_path ()) ) );
+		Console::set ( TRUE );
+	}
 	public static function read($glob_config, $file, $file2 = null) {
 		$debug = isset ( $glob_config ["RX_MODE_DEBUG"] ) && ($glob_config ["RX_MODE_DEBUG"] == TRUE);
 		
-		self::$cache = new RxCache ( "config_" . $glob_config ['CONTROLLER'], true );
+		self::$cache = new RxCache ( "config", true );
 		
 		$reloadCache = FALSE;
 		header ( "FLAGS:" . self::$cache->isEmpty () . "-" . $_glob_config ["RX_MODE_DEBUG"] . "-" . $debug );
@@ -211,9 +235,9 @@ class Config {
 			self::$cache->merge ( $localConfig );
 			self::$cache->set ( 'GLOBAL', array_merge ( $DEFAULT_CONFIG ['GLOBAL'], $localConfig ['GLOBAL'], $glob_config ) );
 			
-			$reloadMode = isset($_GET ['ModPagespeed']) ? $_GET ['ModPagespeed'] : NULL;
+			$reloadMode = isset ( $_GET ['ModPagespeed'] ) ? $_GET ['ModPagespeed'] : NULL;
 			
-			call_user_func ( rx_function ( "rx_reload_cache" ),$reloadMode);
+			call_user_func ( rx_function ( "rx_reload_cache" ), $reloadMode );
 			
 			self::$cache->save ();
 		} else {
@@ -221,41 +245,6 @@ class Config {
 		}
 		define ( "RELOAD_VERSION", $RELOAD_VERSION );
 		return self::$cache->getArray ();
-		;
-	}
-	public static function load($file, $file2 = null, $glob_config = array()) {
-		$GLOBALS ['CONFIG'] = self::read ( $glob_config, $file, $file2 );
-		
-		set_include_path ( $GLOBALS ['CONFIG'] ['GLOBAL'] ['WORK_DIR'] );
-		
-		define ( "BASE_PATH", dirname ( __FILE__ ) );
-		
-		// print_r($GLOBALS ['CONFIG']['GLOBAL']);
-		foreach ( $GLOBALS ['CONFIG'] ['GLOBAL'] as $key => $value ) {
-			define ( $key, $value );
-		}
-		
-		define ( 'Q', (isset ( $_REQUEST ['q'] ) ? $_REQUEST ['q'] : NULL) );
-		
-		$path_info = pathinfo ( $_SERVER ['PHP_SELF'] );
-		$CONTEXT_PATH = ((Q == NULL) ? strstr ( $_SERVER ['PHP_SELF'], $path_info ['basename'], TRUE ) : strstr ( $_SERVER ['REQUEST_URI'], Q, true ));
-		/**
-		 * TODO:- Fix it wth better solution
-		 */
-		if ($CONTEXT_PATH == null) {
-			$CONTEXT_PATH = str_replace ( $path_info ['basename'], "", $_SERVER ['PHP_SELF'] );
-		}
-		
-		// Browser::header("Q=".$_REQUEST ['q']);
-		// Browser::header("CONTEXT_PATH==".$CONTEXT_PATH);
-		// Browser::header("PHP_SELF==".$_SERVER ['PHP_SELF']);
-		// Browser::header("basename==".$path_info ['basename']);
-		// Browser::header("REQUEST_URI==".$_SERVER ['REQUEST_URI']);
-		
-		// echo "CONTEXT_PATH::".Q;
-		define ( 'CONTEXT_PATH', $CONTEXT_PATH );
-		define ( 'APP_CONTEXT', resolve_path ( $CONTEXT_PATH . (get_include_path ()) ) );
-		Console::set ( TRUE );
 	}
 	public static function save() {
 		self::$cache->save ( TRUE );
@@ -320,7 +309,7 @@ class Browser {
 class FileUtil {
 	public static function checkDirectory() {
 		try {
-			if (! is_dir ( "../build/" )) {
+			if (! is_dir ( PROJECT_ROOT_DIR . "/build/" )) {
 				self::mkdir ( "cache" );
 			}
 		} catch ( Exception $e ) {
@@ -328,17 +317,18 @@ class FileUtil {
 		}
 	}
 	public static function write($file, $content) {
-		return file_put_contents ( "../build/" . $file, $content );
+		return file_put_contents ( PROJECT_ROOT_DIR . "build/" . $file, $content );
 	}
 	public static function read($file) {
-		return readfile ( "../build/" . $file );
+		return readfile ( PROJECT_ROOT_DIR . "/build/" . $file );
 	}
 	public static function mkdir($dirName, $rights = 0777) {
-		$dirs = explode ( '/', "../build/" . $dirName );
-		$dir = '';
+		$dirs = explode ( '/', $dirName );
+		$dir = PROJECT_ROOT_DIR . "build/";
 		foreach ( $dirs as $part ) {
 			$dir .= $part . '/';
 			if (! is_dir ( $dir ) && strlen ( $dir ) > 0) {
+				echo "TRYEING--".$dir."==";
 				if (! mkdir ( $dir, $rights )) {
 					return false;
 				}
@@ -347,12 +337,10 @@ class FileUtil {
 		return true;
 	}
 }
-
 class DBService {
 	public static $connected = false;
 	public static $map = array ();
 	public static $defaultDb = null;
-
 	public static function getDB() {
 		if (self::$defaultDb == null) {
 			self::$defaultDb = self::initDB ( Config::getProperty ( "GLOBAL", "DEFAULT_DB" ) );

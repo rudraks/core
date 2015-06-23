@@ -20,7 +20,7 @@ class RxCache {
 			include_once (RUDRA . "/phpfastcache/phpfastcache.php");
 			$this::$cache = new phpFastCache ();
 		} else {
-			$this->hard_file = '../build/rx_cache_' . $prefix . '.php';
+			$this->hard_file = BUILD_PATH.'rc_'.PROJECT_ID."_" .$prefix . '.php';
 			if ($this->exists ()) {
 				if (! isset ( self::$cache_array [$this->name] )) {
 					self::$cache_array [$this->name] = include $this->hard_file;

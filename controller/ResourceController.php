@@ -51,8 +51,9 @@ class ResourceController extends AbstractController {
 		$source = str_replace ($version,"", $target);
 		print_js_comment($target,$source,$version);
 		if(!$hdr->printMinifiedCSS($source, $target) && ENABLE_SCSS_PHP){
-			header('HTTP/1.1 301 Moved Permanently');
-			header('Location: '.CONTEXT_PATH.str_replace(".css", ".scss", $source)."?_=".RELOAD_VERSION);
+			print_js_comment("ENABLE_SCSS_PHP");
+			//header('HTTP/1.1 301 Moved Permanently');
+			//header('Location: '.CONTEXT_PATH.str_replace(".css", ".scss", $source)."?_=".RELOAD_VERSION);
 		}
 		
 	}

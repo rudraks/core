@@ -1,4 +1,5 @@
 <?php
+
 function is_remote($file_name) {
 	return strpos ( $file_name, '://' ) > 0 ? 1 : 0;
 }
@@ -6,6 +7,9 @@ function is_remote_file($file_name) {
 	return is_remote ( $file_name ) && preg_match ( "#\.[a-zA-Z0-9]{1,4}$#", $file_name ) ? 1 : 0;
 }
 function replace_first($search, $replace = "", $subject = "") {
+	if(empty($search)){
+		return $subject;
+	}
 	$pos = strpos ( $subject, $search );
 	if ($pos !== false) {
 		$newstring = substr_replace ( $subject, $replace, $pos, strlen ( $search ) );

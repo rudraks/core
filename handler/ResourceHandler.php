@@ -2,7 +2,7 @@
 
 
 include_once ("AbstractHandler.php");
-include_once (RUDRA_MODEL . "/Header.php");
+include_once RUDRA_MODEL . "/Header.php";
 
 class ResourceHandler extends AbstractHandler {
 	public function invokeHandler(){
