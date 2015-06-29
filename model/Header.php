@@ -257,7 +257,8 @@ class Header {
 			$output = PROJECT_ROOT_DIR . $file;
 			if ($this->const ['RX_JS_MIN']) {
 				// Browser::warn ( "minifying...", PROJECT_ROOT_DIR . $file );
-				$output = ResourceUtil::js_minify ( $file, $target );
+				$output = $this->minified->minify (PROJECT_ROOT_DIR.$file, self::$BUILD_PATH . $target );
+				//$output = ResourceUtil::js_minfiy ( $file, $target );
 			} else {
 			}
 			if (file_exists ( $output )) {
