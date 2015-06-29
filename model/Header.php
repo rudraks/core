@@ -9,6 +9,8 @@ require_once (RUDRA . '/magicmin/class.magic-min.php');
 
 // Initialize the class with image encoding, gzip, a timer, and use the google closure API
 
+use \RudraX\Utils\FileUtil;
+use \RudraX\Utils\ResourceUtil;
 /**
  * Description of Header
  *
@@ -33,13 +35,8 @@ class Header {
 	public static $modulefiles = null;
 	public static $BUILD_PATH;
 	public static $RX_JS_MIN = false;
-	public static $BUNDLE_PATH = "resources_cache/resources";
-	public static $BUNDLE_FILE = "bundle.json";
+	public static $BUNDLE_PATH = "resources_cache/resources/bundle.json";
 	
-	public static function get_bundle_file_path(){
-		return (self::$BUNDLE_PATH . "/" . self::$BUNDLE_FILE);
-	}
-	 
 	public static function init($force = FALSE) {
 		Browser::info ( "init" );
 		self::$cache = new RxCache ( "header", true );
@@ -52,9 +49,11 @@ class Header {
 	}
 	public static function scan() {
 		Browser::warn ( "Scanning All Web Modules" );
+		ResourceUtil::$RESOURCE_DIST_DIR = "resources_cache";
 		// READ MODULES
-		self::$webmodules = self::getModuleProperties (LIB_PATH, self::$webmodules );
-		self::$webmodules = self::getModuleProperties (RESOURCE_PATH, self::$webmodules );
+		self::$webmodules = self::getModuleProperties ( LIB_PATH, self::$webmodules );
+		self::$webmodules = self::getModuleProperties ( RESOURCE_PATH, self::$webmodules );
+		
 		
 		self::$cache->set ( 'webmodules', self::$webmodules );
 		
@@ -62,18 +61,17 @@ class Header {
 		self::$modulefiles = array ();
 		$header = new Header ();
 		
-		if(!empty(self::$webmodules ['bundles'])){
+		if (! empty ( self::$webmodules ['bundles'] )) {
 			foreach ( self::$webmodules ['bundles'] as $module => $moduleObject ) {
 				$header->_import ( $module );
-			}	
+			}
 		}
-		
+
 		$header->minify ();
 		self::$cache->set ( 'modulefiles', self::$modulefiles );
 		self::$cache->save ();
 		
-		FileUtil::mkdir ( self::$BUNDLE_PATH );
-		FileUtil::write (self::get_bundle_file_path(), json_encode ( Header::getModules () ) );
+		FileUtil::build_write ( self::$BUNDLE_PATH, json_encode ( Header::getModules () ) );
 		
 		Browser::info ( self::$webmodules, self::$modulefiles );
 	}
@@ -174,7 +172,7 @@ class Header {
 	public function combine() {
 		$count = count ( $this->scripts );
 		$this->scripts_bundle = array ();
-		$limit = intval($this->const['RX_JS_MERGE_COUNT']);
+		$limit = intval ( $this->const ['RX_JS_MERGE_COUNT'] );
 		for($i = 0; $i < $count; $i += $limit) {
 			$slice = (array_slice ( $this->scripts, $i, $limit ));
 			$param = "";
@@ -192,17 +190,21 @@ class Header {
 	}
 	public function makeMD5Entry($param) {
 		$fileName = md5 ( $param ) . ".js";
-		$this->scripts_bundle [$fileName] = array( "link" => (CONTEXT_PATH . "combinejs/" . $fileName . "?@=" . $param));
+		$this->scripts_bundle [$fileName] = array (
+				"link" => (CONTEXT_PATH . "combinejs/" . $fileName . "?@=" . $param) 
+		);
 	}
 	public function minify() {
-		if (RX_MODE_DEBUG || self::$cache->isEmpty ()) {
+		if ((FIRST_RELOAD || RX_MODE_DEBUG || self::$cache->isEmpty ())) {
 			foreach ( $this->scripts as $key => $value ) {
+				$newName = self::$BUILD_PATH . $value ["file"];
+				$this->scripts [$key] ["exists"] = file_exists ( PROJECT_ROOT_DIR . $value ["file"] );
+				$this->scripts [$key] ["build_path"] = $newName;
 				if ($this->const ['RX_JS_MIN'] && ! $this->scripts [$key] ["remote"]) {
-					$newName = self::$BUILD_PATH . $value ["file"];
-					$this->scripts [$key] ["exists"] = file_exists ( PROJECT_ROOT_DIR . $value ["file"] );
-					$this->scripts [$key] ["build_path"] = $newName;
 					$this->scripts [$key] ["minified"] = $this->minified->minify ( PROJECT_ROOT_DIR . $value ["file"], $newName );
 					$this->scripts [$key] ["link"] = CONTEXT_PATH . str_replace ( self::$BUILD_PATH, "", $this->scripts [$key] ["minified"] );
+				} else if(! $this->scripts [$key] ["remote"]){
+					\RudraX\Utils\FileUtil::build_copy($value ["file"],ResourceUtil::$RESOURCE_DIST_DIR."/".$value ["file"]);
 				}
 			}
 			
@@ -214,8 +216,8 @@ class Header {
 					$this->css [$key] ["build_path"] = $newName;
 					
 					$inputFile = PROJECT_ROOT_DIR . $value ["file"];
-					$inputFileExists = file_exists($inputFile);
-					if($inputFileExists){
+					$inputFileExists = file_exists ( $inputFile );
+					if ($inputFileExists) {
 						$this->css [$key] ["minified"] = $this->minified->minify ( $inputFile, $newName );
 					} else {
 						$this->css [$key] ["minified"] = $newName;
@@ -226,17 +228,16 @@ class Header {
 		}
 	}
 	public function printMinifiedCSS($file, $target = null) {
-		//$new_file = str_replace ( CONTEXT_PATH, "", $file );
-		//$filFile = $this->minified->minify ( PROJECT_ROOT_DIR . $new_file, self::$BUILD_PATH . $new_file );
-		//echo $new_file;
-		//readfile ( $filFile );
-		
+		// $new_file = str_replace ( CONTEXT_PATH, "", $file );
+		// $filFile = $this->minified->minify ( PROJECT_ROOT_DIR . $new_file, self::$BUILD_PATH . $new_file );
+		// echo $new_file;
+		// readfile ( $filFile );
 		if (! empty ( $file )) {
 			$target = ($target == null) ? str_replace ( CONTEXT_PATH, "", $file ) : $target;
 			$output = PROJECT_ROOT_DIR . $file;
 			$inputFile = PROJECT_ROOT_DIR . $file;
-			$inputFileExists = file_exists($inputFile);
-			if($inputFileExists){
+			$inputFileExists = file_exists ( $inputFile );
+			if ($inputFileExists) {
 				$output = $this->minified->minify ( $inputFile, self::$BUILD_PATH . $target );
 			}
 			if (file_exists ( $output )) {
@@ -248,17 +249,16 @@ class Header {
 		} else {
 			print_js_comment ( "No File Requested" . $file );
 		}
-		return file_exists($inputFile);
+		return file_exists ( $inputFile );
 	}
-	public function printMinifiedJs($file, $target = null) {
+	public function printMinifiedJs($file, $target = null, $version = "") {
 		if (! empty ( $file )) {
 			$target = ($target == null) ? str_replace ( CONTEXT_PATH, "", $file ) : $target;
 			$output = PROJECT_ROOT_DIR . $file;
 			if ($this->const ['RX_JS_MIN']) {
 				// Browser::warn ( "minifying...", PROJECT_ROOT_DIR . $file );
-				$output = $this->minified->minify (PROJECT_ROOT_DIR.$file, self::$BUILD_PATH . $target );
-				// print_r($file);
-				// print_js_comment ( $file,$target, "=".file_exists( PROJECT_ROOT_DIR .$file) );
+				$output = ResourceUtil::js_minify ( $file, $target );
+			} else {
 			}
 			if (file_exists ( $output )) {
 				readfile ( $output );
@@ -305,9 +305,9 @@ class Header {
 										$filemodules ['bundles'] [$mod] [$key] = explode ( ',', $file );
 									} else if ($key != '@' && ! is_remote_file ( $file )) {
 										// Browser::log("****",resolve_path($dir."/".$file),"***");
-										$file_path = resolve_path(replace_first ( PROJECT_ROOT_DIR, "", $dir . '/' . $file ));
+										$file_path = resolve_path ( replace_first ( PROJECT_ROOT_DIR, "", $dir . '/' . $file ) );
 										$filemodules ['bundles'] [$mod] ["files"] [] = $file_path;
-										//echo $file_path."scanning</br>";
+										// echo $file_path."scanning</br>";
 										// $filemodules['bundles'][$mod]["files"][] = self::resolve_path("/resou/".$dir.'/'.$file);
 									} else
 										$filemodules ['bundles'] [$mod] ["files"] [] = $file;

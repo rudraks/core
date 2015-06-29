@@ -1,13 +1,13 @@
 <?php
 
-/**
- * @package rudraxframework\core
- */
 require_once "php_functions.php";
 require_once "Console.php";
 // include_once ("model/AbstractRequest.php");
 include_once ("model/RxCache.php");
 include_once ("ClassUtil.php");
+
+use \RudraX\Utils\FileUtil;
+
 class RudraX {
 	public static $websitecache;
 	public static $REQUEST_MAPPED = FALSE;
@@ -16,7 +16,7 @@ class RudraX {
 	public static function init() {
 		Browser::init ();
 		ClassUtil::init ();
-		self::$ANNOTATIONS = new RxCache ( "annotation", true );
+		self::$ANNOTATIONS = new \RxCache ( "annotation", true );
 	}
 	public static function WebCache() {
 		if (self::$websitecache == NULL)
@@ -98,6 +98,7 @@ class RudraX {
 		// Loads all the Constants
 		define ( 'PROJECT_ROOT_DIR', $global_config ['PROJECT_ROOT_DIR'] );
 		define ( 'PROJECT_ID', md5(PROJECT_ROOT_DIR.$global_config ['CONTROLLER']));
+		FileUtil::$PROJECT_ROOT_DIR = PROJECT_ROOT_DIR;
 		include_once 'constants.php';
 		ob_start ();
 		
@@ -217,7 +218,9 @@ class Config {
 		$RELOAD_VERSION = self::$cache->get ( "RELOAD_VERSION" );
 		
 		if ($debug || $reloadCache) {
-			FileUtil::checkDirectory ();
+			
+			FileUtil::build_check ();
+			
 			define ( "FIRST_RELOAD", TRUE );
 			$RELOAD_VERSION = microtime ( true );
 			self::$cache->set ( "RELOAD_VERSION", $RELOAD_VERSION );
@@ -306,36 +309,7 @@ class Browser {
 		}
 	}
 }
-class FileUtil {
-	public static function checkDirectory() {
-		try {
-			if (! is_dir ( PROJECT_ROOT_DIR . "/build/" )) {
-				self::mkdir ( "cache" );
-			}
-		} catch ( Exception $e ) {
-			echo "build directory not found in project root, please create with appropritae permissions and try again";
-		}
-	}
-	public static function write($file, $content) {
-		return file_put_contents ( PROJECT_ROOT_DIR . "build/" . $file, $content );
-	}
-	public static function read($file) {
-		return readfile ( PROJECT_ROOT_DIR . "/build/" . $file );
-	}
-	public static function mkdir($dirName, $rights = 0777) {
-		$dirs = explode ( '/', $dirName );
-		$dir = PROJECT_ROOT_DIR . "build/";
-		foreach ( $dirs as $part ) {
-			$dir .= $part . '/';
-			if (! is_dir ( $dir ) && strlen ( $dir ) > 0) {
-				if (! mkdir ( $dir, $rights )) {
-					return false;
-				}
-			}
-		}
-		return true;
-	}
-}
+
 class DBService {
 	public static $connected = false;
 	public static $map = array ();

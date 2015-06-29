@@ -30,10 +30,10 @@ class ResourceController extends AbstractController {
 	function buildJSFile($mdfile,$q){
 		include_once (RUDRA . "/core/model/Header.php");
 		$hdr = new Header(); 
-		$version = "-_".$_REQUEST["_"];
+		$version = "version : ".$_REQUEST["_"];
 		$target = str_replace ("buildfile/js/","", $_GET['q']);
-		$source = str_replace ($version,"", $target);
-		print_js_comment($target,$source,$version);
+		//$source = str_replace ($version,"", $target);
+		print_js_comment("NEW",$target,$source,$version);
 		$hdr->printMinifiedJs($source, $target);
 	}
 	
@@ -66,7 +66,7 @@ class ResourceController extends AbstractController {
 	function bundleJson($version){
 		include_once (RUDRA . "/core/model/Header.php");
 		Header::init(true);
-		FileUtil::read(Header::get_build_file_path());
+		\RudraX\Utils\ResourceUtil::build_read(Header::get_build_file_path());
 	}
 	
 	/** Default RudraX Plug

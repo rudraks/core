@@ -13,6 +13,7 @@
 		}
 	],
 	"require": {
+		"rudrax/utils" : ">=0.0.0",
 		"rudrax/application": "1.*",
 		"rudrax/annotations": "1.*",
 		"rudrax/smarty": "3.*",
