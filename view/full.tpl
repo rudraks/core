@@ -19,6 +19,7 @@ var RELOAD_VERSION = ('{$smarty.const.RELOAD_VERSION}');
 {foreach $header->const as $const}var {$const@key} = '{$const}';{/foreach}
 </script>
 <script>
+/*
 ["checking","error","noupdate","downloading","progress","updateready"].map(function(key){
 	console.info("attaching",key)
 	window.applicationCache.addEventListener(key, function(){ console.info("-----",key)})
@@ -28,6 +29,7 @@ window.applicationCache.update()
 } catch(e){
 	console.info("ee",e)
 }
+*/
 </script>
 </head>
 <body>
