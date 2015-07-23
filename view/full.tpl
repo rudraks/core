@@ -1,7 +1,5 @@
-<html manifes="{$smarty.const.CONTEXT_PATH}cache.manifest?{$smarty.const.RELOAD_VERSION}" >
+<html>
 <head>
-<meta name="viewport"
-	content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"/>
 {foreach $METAS as $meta}
 <meta name="{$meta@key}" content="{$meta}">
 {/foreach}
