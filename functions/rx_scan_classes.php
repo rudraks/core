@@ -70,14 +70,15 @@ function rx_scan_dir ($annotations,$dir){
 						if(isset($result["RequestMapping"])
 						&&	isset($result["RequestMapping"][0])
 						&&  isset($result["RequestMapping"][0]["url"])){
-							$allController[$result["RequestMapping"][0]["url"]] = array(
+							$allController[] = array(
 									"className" => $className,
 									"method" => $method,
 									"filePath" => $file->getPathname(),
 									"mtime" => $file->getMTime(),
 									"mappingUrl" => $result["RequestMapping"][0]["url"],
 									"cache" => (isset($result["RequestMapping"][0]["cache"]) ? $result["RequestMapping"][0]["cache"] : FALSE),
-									"type" => (isset($result["RequestMapping"][0]["type"]) ? $result["RequestMapping"][0]["type"] : NULL)
+									"type" => (isset($result["RequestMapping"][0]["type"]) ? $result["RequestMapping"][0]["type"] : NULL),
+									"requestMethod" => (isset($result["RequestMapping"][0]["method"]) ? strtoupper($result["RequestMapping"][0]["method"]) : NULL),
 							);
 						}
 					}

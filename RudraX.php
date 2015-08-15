@@ -44,7 +44,7 @@ class RudraX {
 			);
 			self::$url_cache->set ( $mapping, $mapObj );
 		}
-		if (self::$url_size < $mapObj ["mapperSize"] & fnmatch ( $mapObj ["mapperKey"], Q )) {
+		if (self::$url_size < $mapObj ["mapperSize"] && fnmatch ( $mapObj ["mapperKey"], Q )) {
 			$varmap = array ();
 			preg_match ( "/" . $mapObj ["mapper"] . "/", str_replace ( "/", "#", Q ), $varmap );
 			if (count ( $varmap ) > 0) {
@@ -71,9 +71,11 @@ class RudraX {
 		$allControllers = ClassUtil::getControllerArray ();
 		if (! empty ( $allControllers )) {
 			foreach ( $allControllers as $mappingUrl => $mappingInfo ) {
-				$mapObj = self::getMapObject ( $mappingUrl );
-				if ($mapObj != NULL) {
-					self::$url_controller_info = $mappingInfo;
+				if(!isset($mappingInfo["requestMethod"]) || strcasecmp($mappingInfo["requestMethod"],$_SERVER['REQUEST_METHOD'])==0){
+					$mapObj = self::getMapObject ( $mappingInfo["mappingUrl"]);
+					if ($mapObj != NULL) {
+						self::$url_controller_info = $mappingInfo;
+					}
 				}
 			}
 		}
