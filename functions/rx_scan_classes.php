@@ -47,7 +47,8 @@ function rx_scan_dir ($annotations,$dir){
 						ClassUtil::setHandler($result["Handler"][0], array(
 						"className" => $className,
 						"filePath" => $file->getPathname(),
-						"mtime" => $file->getMTime()
+						"mtime" => $file->getMTime(),
+						"requestParams" => isset($result["RequestParams"])
 						));
 						Browser::warn("HandleScanned::",	ClassUtil::getHandler($result["Handler"][0]));
 						ClassUtil::setMTime($className,$file->getMTime());
@@ -76,6 +77,7 @@ function rx_scan_dir ($annotations,$dir){
 									"filePath" => $file->getPathname(),
 									"mtime" => $file->getMTime(),
 									"mappingUrl" => $result["RequestMapping"][0]["url"],
+									"requestParams" => isset($result["RequestParams"]),
 									"cache" => (isset($result["RequestMapping"][0]["cache"]) ? $result["RequestMapping"][0]["cache"] : FALSE),
 									"type" => (isset($result["RequestMapping"][0]["type"]) ? $result["RequestMapping"][0]["type"] : NULL),
 									"requestMethod" => (isset($result["RequestMapping"][0]["method"]) ? strtoupper($result["RequestMapping"][0]["method"]) : NULL),

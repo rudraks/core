@@ -54,7 +54,9 @@ abstract class AbstractController {
 		}
 		
 		if ($perform) {
-			$this->_interceptor_ ( $info, call_method_by_object ( $this, $info ["method"], $params ) );
+			$this->_interceptor_ ( $info, call_method_by_object ( $this, $info ["method"], $params, 
+				 $info ["requestParams"]
+			 ) );
 		}
 		
 		if ($perform && $cache) {
