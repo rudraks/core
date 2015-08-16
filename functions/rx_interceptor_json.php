@@ -25,7 +25,6 @@ function rx_interceptor_json($user, $controllerInfo, $handlerName) {
 		
 		if ($temp != NULL) {
 			try{
-				print_r($handlerInfo);
 				if ($tempClass->hasMethod ( "invokeHandler" )) {
 					$resp = call_method_by_class ( $tempClass, $temp, 'invokeHandler', array (
 							'user' => $user,

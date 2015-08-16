@@ -31,7 +31,7 @@ function rx_interceptor_template($user, $info, $handlerName) {
 						'page' => $page,
 						'dataModel' => $page->data,
 						'data' => new RequestData ( get_request_param ( "data" ) ) 
-				) );
+				) , $handlerInfo ["requestParams"]);
 				if (! isset ( $view )) {
 					$view = $handlerName;
 				}
